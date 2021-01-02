@@ -33,6 +33,7 @@ const (
 type Movie struct {
 	ID             string
 	Title          string
+	PosterURL      string
 	Genre          Genre
 	Duration       int
 	AgeRestriction bool

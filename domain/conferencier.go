@@ -7,12 +7,14 @@ type P struct {
 
 // Conferencier is a main service, it manage all data about user, movie and cinema
 type Conferencier interface {
-	FindMovies(userID int, pagination P) ([]*Movie, error)
-	FindCinemasNearby(userID int, pagination P) ([]*Cinema, []int, error)
-	FindCinemasWithMovie(userID int, movieID string, pagination P) ([]*Cinema, []int, error)
+	FindMovies(userID int, pag P) ([]*Movie, error)
+	FindCinemas(userID int, pag P) ([]*Cinema, []int, error)
 
 	GetMovie(movieID string) (*Movie, error)
-	GetCinema(cinemaID string) (*Cinema, map[*Movie][]Session, error)
+	GetMovieSchedule(movieID string) (map[*Cinema][]Session, error)
+	GetCinema(cinemaID string) (*Cinema, error)
+	GetCinemaSchedule(cinemaID string) (map[*Movie][]Session, error)
+
 	UpdateUserLocation(userID int, lat, long float32) error
 	RegisterUser(userID int, name string) error
 }

@@ -3,5 +3,5 @@ package main
 import bot "kinoshkin/internal/telebot"
 
 func main() {
-	bot.New().Start()
+	bot.New(nil).Start()
 }

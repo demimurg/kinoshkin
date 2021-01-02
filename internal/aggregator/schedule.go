@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Jeffail/gabs/v2"
 	"github.com/kr/pretty"
+	"github.com/schollz/progressbar/v3"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"log"
@@ -53,7 +54,11 @@ func (sa scheduleAgg) Aggregate() error {
 		return err
 	}
 
+	bar := progressbar.Default(int64(len(cinemasId)),
+		"Schedule downloading...")
+
 	for _, id := range cinemasId {
+		bar.Add(1)
 		err := sa.aggregateMoviesAndTickets(id)
 		if err != nil {
 			log.Printf(
