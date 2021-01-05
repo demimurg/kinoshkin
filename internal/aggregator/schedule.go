@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,8 +31,8 @@ type movie struct {
 	ID             string    `bson:"_id"`
 	KpId           string    `bson:"kp_id"`
 	Title          string    `bson:"title"`
-	TitleOriginal  string    `bson:"title_original"`
-	Duration       string    `bson:"duration,omitempty"`
+	TitleOriginal  string    `bson:"title_original,omitempty"`
+	Duration       int       `bson:"duration,omitempty"`
 	DateReleased   time.Time `bson:"date_released"`
 	LandscapeImg   string    `bson:"landscape_img"`
 	Description    string    `bson:"description"`
@@ -244,12 +245,27 @@ func (sa scheduleAgg) extendMovies() error {
 			return err
 		}
 
-		movie.Duration, _ = movData.S("data", "filmLength").Data().(string)
+		duration, ok := movData.S("data", "filmLength").Data().(string)
+		if ok {
+			movie.Duration = convertToMins(duration)
+		}
+
 		movie.RatingIMDB, _ = movData.S("rating", "ratingImdb").Data().(float64)
 		movie.Trailer, _ = trailers.S("trailers", "0", "url").Data().(string)
 		movie.TrailerName, _ = trailers.S("trailers", "0", "name").Data().(string)
 	}
 	return nil
+}
+
+func convertToMins(dur string) int {
+	t := strings.Split(dur, ":")
+	if len(t) != 2 {
+		return 100
+	}
+
+	h, _ := strconv.Atoi(t[0])
+	m, _ := strconv.Atoi(t[1])
+	return 60*h + m
 }
 
 func getMovieExtraData(id string) ([]byte, error) {
