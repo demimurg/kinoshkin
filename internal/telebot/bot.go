@@ -30,7 +30,8 @@ func New(svc domain.Conferencier) BotServer {
 			}, " "),
 		)
 		_, errS := b.Send(m.Sender, "Hello my friend!", &tb.ReplyMarkup{
-			ReplyKeyboard: [][]tb.ReplyButton{{views.CinemasCmd, views.MoviesCmd}},
+			ReplyKeyboard:       [][]tb.ReplyButton{{views.CinemasCmd, views.MoviesCmd}},
+			ResizeReplyKeyboard: true,
 		})
 		if errR != nil || errS != nil {
 			log.Print(errR, errS)

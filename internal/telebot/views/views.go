@@ -15,8 +15,8 @@ func MoviesList(movies []*domain.Movie) [][]tb.InlineButton {
 	for _, mov := range movies {
 		table = append(table, []tb.InlineButton{
 			{
-				Text: fmt.Sprintf("%s (%.2f)d", mov.Title, mov.Rating.KP),
-				Data: fmt.Sprintf("mov%s", mov.ID),
+				Text: fmt.Sprintf("%s (%.2f)", mov.Title, mov.Rating.KP),
+				Data: Encode(MoviePrefix, mov.ID),
 			},
 		})
 	}
@@ -30,7 +30,7 @@ func CinemasList(cinemas []*domain.Cinema, distances []int) [][]tb.InlineButton 
 		table = append(table, []tb.InlineButton{
 			{
 				Text: fmt.Sprintf("%s (%dm)", cinema.Name, distances[i]),
-				Data: fmt.Sprintf("cin%s", cinema.ID),
+				Data: Encode(CinemaPrefix, cinema.ID),
 			},
 		})
 	}
@@ -39,26 +39,28 @@ func CinemasList(cinemas []*domain.Cinema, distances []int) [][]tb.InlineButton 
 }
 
 func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
-	title := "*" + mov.Title + "*"
-	rating := fmt.Sprintf("_IMDB: %.1f KP: %.1f_", mov.Rating.IMDB, mov.Rating.KP)
-	duration := fmt.Sprintf("`Продолжительность: %d мин.`", mov.Duration)
+	title := fmt.Sprintf("*%s* _(imdb: %.1f, kp: %.1f)_", mov.Title, mov.Rating.IMDB, mov.Rating.KP)
+	// todo: generalize
+	title = strings.ReplaceAll(title, ".", "\\.")
+	title = strings.ReplaceAll(title, "!", "\\!")
+	title = strings.ReplaceAll(title, "(", "\\(")
+	title = strings.ReplaceAll(title, ")", "\\)")
+
+	duration := fmt.Sprintf("Продолжительность: `%d мин`", mov.Duration)
 	// todo: remove duplicates
-	creators := "Создатели: " + strings.Join(append(
+	creators := "Создатели: `" + strings.Join(append(
 		mov.FilmCrew[domain.Director],
 		mov.FilmCrew[domain.Screenwriter]...,
-	), ", ")
-	actors := "Актеры: " + strings.Join(mov.FilmCrew[domain.Actor], ", ")
+	), ", ") + "`"
+	actors := "Актеры: `" + strings.Join(mov.FilmCrew[domain.Actor], ", ") + "`"
 
 	return &tb.Photo{
 		File: tb.File{FileURL: mov.PosterURL},
 		Caption: strings.Join(
-			[]string{
-				title, rating, duration,
-				"```", creators, actors, "```",
-			}, "\n",
+			[]string{title, duration, creators, actors},
+			"\n",
 		),
-		ParseMode: tb.ModeMarkdownV2,
-	}, nil
+	}, []interface{}{tb.ModeMarkdownV2}
 }
 
 func CinemaCard(cinema *domain.Cinema) (msg interface{}, opts []interface{}) {
@@ -68,9 +70,9 @@ func CinemaCard(cinema *domain.Cinema) (msg interface{}, opts []interface{}) {
 	}
 
 	return &tb.Venue{
-		Location:       tb.Location{Lat: cinema.Lat, Lng: cinema.Long},
-		Title:          cinema.Name,
-		Address:        address,
-		FoursquareType: "arts_entertainment/movie_theater",
+		Location:     tb.Location{Lat: cinema.Lat, Lng: cinema.Long},
+		Title:        cinema.Name,
+		Address:      address,
+		FoursquareID: "4bf58dd8d48988d17f941735",
 	}, nil
 }

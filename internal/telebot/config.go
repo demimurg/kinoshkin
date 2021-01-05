@@ -2,7 +2,9 @@ package telebot
 
 import (
 	"github.com/caarlos0/env/v6"
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
+	"log"
 	"time"
 )
 
@@ -18,6 +20,9 @@ type Config struct {
 }
 
 func init() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("can't load variables from .env file")
+	}
 	if err := env.Parse(&cfg); err != nil {
 		panic(errors.Wrap(err, "configuration setup failed"))
 	}

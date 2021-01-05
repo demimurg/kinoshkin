@@ -1,7 +1,10 @@
 package main
 
-import bot "kinoshkin/internal/telebot"
+import (
+	"kinoshkin/internal/conferencier"
+	bot "kinoshkin/internal/telebot"
+)
 
 func main() {
-	bot.New(nil).Start()
+	bot.New(conferencier.Mock{}).Start()
 }
