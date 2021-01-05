@@ -39,13 +39,10 @@ func CinemasList(cinemas []*domain.Cinema, distances []int) [][]tb.InlineButton 
 }
 
 func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
-	title := fmt.Sprintf("*%s* _(imdb: %.1f, kp: %.1f)_", mov.Title, mov.Rating.IMDB, mov.Rating.KP)
-	// todo: generalize
-	title = strings.ReplaceAll(title, ".", "\\.")
-	title = strings.ReplaceAll(title, "!", "\\!")
-	title = strings.ReplaceAll(title, "(", "\\(")
-	title = strings.ReplaceAll(title, ")", "\\)")
-
+	title := applyEscaping(fmt.Sprintf(
+		"*%s* _(imdb: %.1f, kp: %.1f)_",
+		mov.Title, mov.Rating.IMDB, mov.Rating.KP,
+	))
 	duration := fmt.Sprintf("Продолжительность: `%d мин`", mov.Duration)
 	// todo: remove duplicates
 	creators := "Создатели: `" + strings.Join(append(
