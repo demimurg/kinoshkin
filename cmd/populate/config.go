@@ -1,11 +1,8 @@
 package main
 
 import (
-	"github.com/caarlos0/env/v6"
-	"github.com/pkg/errors"
+	"kinoshkin/pkg/env"
 )
-
-var cfg = Config{}
 
 type Config struct {
 	// Collections is subset of 'movies,cities,cinemas'
@@ -14,8 +11,6 @@ type Config struct {
 	MongoAggUrl string `env:"MONGO_AGG_URL,required"`
 }
 
-func init() {
-	if err := env.Parse(&cfg); err != nil {
-		panic(errors.Wrap(err, "configuration setup failed"))
-	}
-}
+var cfg = Config{}
+
+func init() { env.Parse(&cfg) }

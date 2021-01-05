@@ -1,13 +1,8 @@
 package aggregator
 
 import (
-	"github.com/caarlos0/env/v6"
-	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
-	"log"
+	"kinoshkin/pkg/env"
 )
-
-var cfg = Config{}
 
 type Config struct {
 	// CinemasUrl is an api url for retrieving cinemas
@@ -20,11 +15,6 @@ type Config struct {
 	TokenKP string `env:"KP_API_TOKEN,required"`
 }
 
-func init() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("can't load variables from .env file")
-	}
-	if err := env.Parse(&cfg); err != nil {
-		panic(errors.Wrap(err, "configuration setup failed"))
-	}
-}
+var cfg = Config{}
+
+func init() { env.Parse(&cfg) }

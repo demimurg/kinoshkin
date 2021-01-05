@@ -1,14 +1,9 @@
 package telebot
 
 import (
-	"github.com/caarlos0/env/v6"
-	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
-	"log"
+	"kinoshkin/pkg/env"
 	"time"
 )
-
-var cfg = Config{}
 
 type Config struct {
 	// Token is a telegram bot token
@@ -19,11 +14,6 @@ type Config struct {
 	UpdateInterval time.Duration `env:"BOT_UPDATE_INTERVAL" envDefault:"2s"`
 }
 
-func init() {
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("can't load variables from .env file")
-	}
-	if err := env.Parse(&cfg); err != nil {
-		panic(errors.Wrap(err, "configuration setup failed"))
-	}
-}
+var cfg = Config{}
+
+func init() { env.Parse(&cfg) }
