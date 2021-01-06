@@ -98,7 +98,7 @@ func MovieScheduleTable(schedule map[*domain.Cinema][]domain.Session) (interface
 		formattedSchedule[cinemaTitle] = sess
 	}
 
-	msg := "_Расписание на cегодня_ " + time.Now().Format("02-01")
+	msg := fmt.Sprintf("_Расписание на %s_", time.Now().Format("02.01.2006"))
 	return applyEscaping(msg), []interface{}{tb.ModeMarkdownV2, &tb.ReplyMarkup{
 		InlineKeyboard: scheduleTable(formattedSchedule),
 	}}
@@ -121,6 +121,7 @@ func scheduleTable(schedule map[string][]domain.Session) (table [][]tb.InlineBut
 			}
 		}
 		if len(sessions) > 0 {
+			sessions = append(sessions, tb.InlineButton{Text: " "})
 			table = append(table, sessions)
 		}
 	}
