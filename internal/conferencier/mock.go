@@ -1,6 +1,12 @@
 package conferencier
 
-import "kinoshkin/domain"
+import (
+	"kinoshkin/domain"
+	"math/rand"
+	"sort"
+	"syreclabs.com/go/faker"
+	"time"
+)
 
 type Mock struct {
 	domain.Conferencier
@@ -10,8 +16,8 @@ func (m Mock) FindMovies(userID int, pag domain.P) ([]*domain.Movie, error) {
 	return mockMovies, nil
 }
 
-func (m Mock) FindCinemas(userID int, pag domain.P) ([]*domain.Cinema, []int, error) {
-	return mockCinemas, []int{1231, 2015, 7317, 1302, 1504}, nil
+func (m Mock) FindCinemas(userID int, pag domain.P) ([]*domain.Cinema, error) {
+	return mockCinemas, nil
 }
 
 func (m Mock) GetMovie(movieID string) (*domain.Movie, error) {
@@ -23,6 +29,14 @@ func (m Mock) GetMovie(movieID string) (*domain.Movie, error) {
 	return nil, nil
 }
 
+func (m Mock) GetMovieSchedule(movieID string) (map[*domain.Cinema][]domain.Session, error) {
+	schedule := make(map[*domain.Cinema][]domain.Session)
+	for _, cinema := range mockCinemas {
+		schedule[cinema] = genMockSessions()
+	}
+	return schedule, nil
+}
+
 func (m Mock) GetCinema(cinemaID string) (*domain.Cinema, error) {
 	for _, cin := range mockCinemas {
 		if cin.ID == cinemaID {
@@ -32,11 +46,38 @@ func (m Mock) GetCinema(cinemaID string) (*domain.Cinema, error) {
 	return nil, nil
 }
 
+func (m Mock) GetCinemaSchedule(cinemaID string) (map[*domain.Movie][]domain.Session, error) {
+	schedule := make(map[*domain.Movie][]domain.Session)
+	for _, mov := range mockMovies {
+		schedule[mov] = genMockSessions()
+	}
+	return schedule, nil
+}
+
 func (m Mock) UpdateUserLocation(userID int, lat, long float32) error {
 	return nil
 }
 func (m Mock) RegisterUser(userID int, name string) error {
 	return nil
+}
+
+func genMockSessions() []domain.Session {
+	var sessions []domain.Session
+	for i := 0; i < rand.Intn(5)+2; i++ {
+		eveningTime, _ := time.Parse("15:04", "19:00")
+		sessions = append(sessions, domain.Session{
+			Start: faker.Time().Between(
+				eveningTime.Truncate(7*time.Hour),
+				eveningTime,
+			),
+			Price: faker.RandomInt(100, 500),
+		})
+	}
+	sort.Slice(sessions, func(i, j int) bool {
+		return sessions[i].Start.Before(sessions[j].Start)
+	})
+
+	return sessions
 }
 
 var mockMovies = []*domain.Movie{
@@ -89,43 +130,48 @@ var mockMovies = []*domain.Movie{
 
 var mockCinemas = []*domain.Cinema{
 	{
-		ID:      "551797ea1f7d154a12ddf058",
-		Name:    "Формула Кино Академ Парк",
-		Address: "Гражданский просп., 41, ТРК «Академ-Парк»",
-		Metro:   []string{"Академическая", "Политехническая"},
-		Lat:     60.011567,
-		Long:    30.397759,
+		ID:       "551797ea1f7d154a12ddf058",
+		Name:     "Формула Кино Академ Парк",
+		Address:  "Гражданский просп., 41, ТРК «Академ-Парк»",
+		Metro:    []string{"Академическая", "Политехническая"},
+		Lat:      60.011567,
+		Long:     30.397759,
+		Distance: 1231,
 	},
 	{
-		ID:      "57f03ccc682d1a1d756e2575",
-		Name:    "Мираж Синема Озерки",
-		Address: "просп. Энгельса, 124",
-		Metro:   []string{"Озерки", "Проспект Просвещения"},
-		Lat:     60.040254,
-		Long:    30.324294,
+		ID:       "57f03ccc682d1a1d756e2575",
+		Name:     "Мираж Синема Озерки",
+		Address:  "просп. Энгельса, 124",
+		Metro:    []string{"Озерки", "Проспект Просвещения"},
+		Lat:      60.040254,
+		Long:     30.324294,
+		Distance: 2015,
 	},
 	{
-		ID:      "55424df91f6fd64c8d37933b",
-		Name:    "Формула Кино Галерея",
-		Address: "Лиговский просп., 30а, ТРЦ «Галерея», 4 этаж",
-		Metro:   []string{"Владимирская", "Площадь Восстания"},
-		Lat:     59.92741,
-		Long:    30.36064,
+		ID:       "55424df91f6fd64c8d37933b",
+		Name:     "Формула Кино Галерея",
+		Address:  "Лиговский просп., 30а, ТРЦ «Галерея», 4 этаж",
+		Metro:    []string{"Владимирская", "Площадь Восстания"},
+		Lat:      59.92741,
+		Long:     30.36064,
+		Distance: 7317,
 	},
 	{
-		ID:      "578c1748682d1ade3a28bea3",
-		Name:    "Формула Кино Родео Драйв",
-		Address: "просп. Культуры, 1, ТРК «Родео Драйв», 3 этаж",
-		Metro:   []string{"Академическая", "Политехническая"},
-		Lat:     60.011567,
-		Long:    30.397759,
+		ID:       "578c1748682d1ade3a28bea3",
+		Name:     "Формула Кино Родео Драйв",
+		Address:  "просп. Культуры, 1, ТРК «Родео Драйв», 3 этаж",
+		Metro:    []string{"Академическая", "Политехническая"},
+		Lat:      60.011567,
+		Long:     30.397759,
+		Distance: 1302,
 	},
 	{
-		ID:      "57f03c78b4660194c141e900",
-		Name:    "Мираж Синема Европолис",
-		Address: "Полюстровский просп., 84а, ТРК «Европолис»",
-		Metro:   []string{"Лесная"},
-		Lat:     59.987456,
-		Long:    30.354913,
+		ID:       "57f03c78b4660194c141e900",
+		Name:     "Мираж Синема Европолис",
+		Address:  "Полюстровский просп., 84а, ТРК «Европолис»",
+		Metro:    []string{"Лесная"},
+		Lat:      59.987456,
+		Long:     30.354913,
+		Distance: 1504,
 	},
 }

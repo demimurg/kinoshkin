@@ -11,6 +11,8 @@ const (
 	MoviesPrefix = "movs"
 	// CinemasPrefix used for identify views
 	CinemasPrefix = "cins"
+	// MovieSchedulePrefix appears when somebody requests schedule from MovieCard
+	MovieSchedulePrefix = "msc"
 )
 
 func Encode(prefix string, id string) string {
@@ -18,6 +20,7 @@ func Encode(prefix string, id string) string {
 }
 
 func Decode(data string) (string, string) {
+	// todo: error handling
 	components := strings.Split(data, "|")
 	return components[0], components[1]
 }

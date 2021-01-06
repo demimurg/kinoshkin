@@ -9,6 +9,7 @@ type Cinema struct {
 	Address   string
 	Metro     []string
 	Lat, Long float32
+	Distance  int
 }
 
 // Session shows information about session in cinema
@@ -21,8 +22,7 @@ type Session struct {
 // CinemasRepo provides basic db methods for cinemas collection
 type CinemasRepo interface {
 	// FindNearby search cinemas near user location
-	// returns cinemas and distance in meters
-	FindNearby(lat, long float32) ([]*Cinema, []int, error)
-	FindWithMovie(lat, long float32, movieID string) ([]*Cinema, []int, error)
+	FindNearby(lat, long float32) ([]*Cinema, error)
+	FindWithMovie(lat, long float32, movieID string) ([]*Cinema, error)
 	GetSchedule(cinemaID string) (map[*Movie][]*Session, error)
 }

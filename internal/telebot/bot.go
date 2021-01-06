@@ -30,7 +30,10 @@ func New(svc domain.Conferencier) BotServer {
 			}, " "),
 		)
 		_, errS := b.Send(m.Sender, "Hello my friend!", &tb.ReplyMarkup{
-			ReplyKeyboard:       [][]tb.ReplyButton{{views.CinemasCmd, views.MoviesCmd}},
+			ReplyKeyboard: [][]tb.ReplyButton{
+				{views.CinemasCmd, views.MoviesCmd},
+				{views.LocationCmd},
+			},
 			ResizeReplyKeyboard: true,
 		})
 		if errR != nil || errS != nil {
@@ -46,9 +49,9 @@ func New(svc domain.Conferencier) BotServer {
 
 		switch m.Text {
 		case views.CinemasCmd.Text:
-			cinemas, dists, _ := svc.FindCinemas(m.Sender.ID, domain.P{})
+			cinemas, _ := svc.FindCinemas(m.Sender.ID, domain.P{})
 			msg = "cinemas"
-			buttons = views.CinemasList(cinemas, dists)
+			buttons = views.CinemasList(cinemas)
 		case views.MoviesCmd.Text:
 			movies, _ := svc.FindMovies(m.Sender.ID, domain.P{})
 			msg = "movies"
@@ -77,7 +80,11 @@ func New(svc domain.Conferencier) BotServer {
 			msg, opts = views.MovieCard(movie)
 		case views.CinemaPrefix:
 			cinema, _ := svc.GetCinema(id)
-			msg, opts = views.CinemaCard(cinema)
+			schedule, _ := svc.GetCinemaSchedule(id)
+			msg, opts = views.CinemaCard(cinema, schedule)
+		case views.MovieSchedulePrefix:
+			schedule, _ := svc.GetMovieSchedule(id)
+			msg, opts = views.MovieScheduleTable(schedule)
 		default:
 			return
 		}
