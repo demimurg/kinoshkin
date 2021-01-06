@@ -33,7 +33,7 @@ func CinemasList(cinemas []*domain.Cinema) [][]tb.InlineButton {
 	for _, cinema := range cinemas {
 		table = append(table, []tb.InlineButton{
 			{
-				Text: fmt.Sprintf("%s (%dm)", cinema.Name, cinema.Distance),
+				Text: fmt.Sprintf("%s ~ %.2fкм", cinema.Name, float32(cinema.Distance)/1000),
 				Data: Encode(CinemaPrefix, cinema.ID),
 			},
 		})
@@ -75,32 +75,32 @@ func CinemaCard(cinema *domain.Cinema, schedule map[*domain.Movie][]domain.Sessi
 		address = "🚇" + strings.Join(cinema.Metro, ", ") + "\n" + address
 	}
 
-	sch := make(map[string][]domain.Session, len(schedule))
+	formattedSchedule := make(map[string][]domain.Session, len(schedule))
 	for mov, sess := range schedule {
 		movTitle := fmt.Sprintf("%s (%.1f)", mov.Title, mov.Rating.KP)
-		sch[movTitle] = sess
+		formattedSchedule[movTitle] = sess
 	}
 
 	return &tb.Venue{
 			Location:     tb.Location{Lat: cinema.Lat, Lng: cinema.Long},
-			Title:        fmt.Sprintf("%s - %d метров", cinema.Name, cinema.Distance),
+			Title:        fmt.Sprintf("%s ~ %.2fкм", cinema.Name, float32(cinema.Distance)/1000),
 			Address:      address,
 			FoursquareID: "4bf58dd8d48988d17f941735",
 		}, []interface{}{&tb.ReplyMarkup{
-			InlineKeyboard: scheduleTable(sch),
+			InlineKeyboard: scheduleTable(formattedSchedule),
 		}}
 }
 
 func MovieScheduleTable(schedule map[*domain.Cinema][]domain.Session) (interface{}, []interface{}) {
-	sch := make(map[string][]domain.Session, len(schedule))
+	formattedSchedule := make(map[string][]domain.Session, len(schedule))
 	for cin, sess := range schedule {
-		cinemaTitle := fmt.Sprintf("%s - %d метров", cin.Name, cin.Distance)
-		sch[cinemaTitle] = sess
+		cinemaTitle := fmt.Sprintf("%s ~ %.2fкм", cin.Name, float32(cin.Distance)/1000)
+		formattedSchedule[cinemaTitle] = sess
 	}
 
 	msg := "_Расписание на cегодня_ " + time.Now().Format("02-01")
 	return applyEscaping(msg), []interface{}{tb.ModeMarkdownV2, &tb.ReplyMarkup{
-		InlineKeyboard: scheduleTable(sch),
+		InlineKeyboard: scheduleTable(formattedSchedule),
 	}}
 }
 
