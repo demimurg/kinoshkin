@@ -75,10 +75,14 @@ func CinemaCard(cinema *domain.Cinema, schedule map[*domain.Movie][]domain.Sessi
 		address = "🚇" + strings.Join(cinema.Metro, ", ") + "\n" + address
 	}
 
-	formattedSchedule := make(map[string][]domain.Session, len(schedule))
+	var table [][]tb.InlineButton
 	for mov, sess := range schedule {
 		movTitle := fmt.Sprintf("%s (%.1f)", mov.Title, mov.Rating.KP)
-		formattedSchedule[movTitle] = sess
+		table = append(table, []tb.InlineButton{{
+			Text: movTitle,
+			Data: Encode(MoviePrefix, mov.ID),
+		}})
+		table = append(table, renderSessions(sess)...)
 	}
 
 	return &tb.Venue{
@@ -87,43 +91,45 @@ func CinemaCard(cinema *domain.Cinema, schedule map[*domain.Movie][]domain.Sessi
 			Address:      address,
 			FoursquareID: "4bf58dd8d48988d17f941735",
 		}, []interface{}{&tb.ReplyMarkup{
-			InlineKeyboard: scheduleTable(formattedSchedule),
+			InlineKeyboard: table,
 		}}
 }
 
 func MovieScheduleTable(schedule map[*domain.Cinema][]domain.Session) (interface{}, []interface{}) {
-	formattedSchedule := make(map[string][]domain.Session, len(schedule))
+	var table [][]tb.InlineButton
 	for cin, sess := range schedule {
 		cinemaTitle := fmt.Sprintf("%s ~ %.2fкм", cin.Name, float32(cin.Distance)/1000)
-		formattedSchedule[cinemaTitle] = sess
+		table = append(table, []tb.InlineButton{{
+			Text: cinemaTitle,
+			Data: Encode(CinemaPrefix, cin.ID),
+		}})
+		table = append(table, renderSessions(sess)...)
 	}
 
 	msg := fmt.Sprintf("_Расписание на %s_", time.Now().Format("02.01.2006"))
 	return applyEscaping(msg), []interface{}{tb.ModeMarkdownV2, &tb.ReplyMarkup{
-		InlineKeyboard: scheduleTable(formattedSchedule),
+		InlineKeyboard: table,
 	}}
 }
 
-func scheduleTable(schedule map[string][]domain.Session) (table [][]tb.InlineButton) {
-	for title, sess := range schedule {
-		table = append(table, []tb.InlineButton{{
-			Text: title,
-		}})
-
-		var sessions []tb.InlineButton
-		for i, ses := range sess {
-			sessions = append(sessions, tb.InlineButton{
-				Text: ses.Start.Format("15:04") + fmt.Sprintf(" %dр", ses.Price),
-			})
-			if i%2 != 0 {
-				table = append(table, sessions)
-				sessions = nil
-			}
-		}
-		if len(sessions) > 0 {
-			sessions = append(sessions, tb.InlineButton{Text: " "})
-			table = append(table, sessions)
+func renderSessions(sess []domain.Session) [][]tb.InlineButton {
+	var (
+		table [][]tb.InlineButton
+		row   []tb.InlineButton
+	)
+	for i, ses := range sess {
+		row = append(row, tb.InlineButton{
+			Text: ses.Start.Format("15:04") + fmt.Sprintf(" %dр", ses.Price),
+		})
+		if i%2 != 0 {
+			table = append(table, row)
+			row = nil
 		}
 	}
-	return
+	if len(row) > 0 {
+		row = append(row, tb.InlineButton{Text: " "})
+		table = append(table, row)
+	}
+
+	return table
 }
