@@ -2,7 +2,7 @@ package views
 
 func applyEscaping(s string) string {
 	var (
-		forbidden = ".!()-"
+		forbidden = ".!()-+#[]{}"
 		escaped   = ""
 	)
 
