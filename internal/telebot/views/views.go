@@ -43,24 +43,25 @@ func CinemasList(cinemas []*domain.Cinema) [][]tb.InlineButton {
 }
 
 func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
-	title := applyEscaping(fmt.Sprintf(
+	title := fmt.Sprintf(
 		"*%s* _(imdb: %.1f, kp: %.1f)_",
 		mov.Title, mov.Rating.IMDB, mov.Rating.KP,
-	))
+	)
 	duration := fmt.Sprintf("Продолжительность: `%d мин`", mov.Duration)
 	// todo: remove duplicates
 	creators := "Создатели: `" + strings.Join(append(
 		mov.FilmCrew[domain.Director],
 		mov.FilmCrew[domain.Screenwriter]...,
 	), ", ") + "`"
-	actors := "Актеры: `" + strings.Join(mov.FilmCrew[domain.Actor], ", ") + "`"
+	actors := fmt.Sprintf("Актеры: `%s`", strings.Join(mov.FilmCrew[domain.Actor], ", "))
+	description := "_" + mov.Description + "_"
 
 	return &tb.Photo{
 			File: tb.File{FileURL: mov.PosterURL},
-			Caption: strings.Join(
-				[]string{title, duration, creators, actors},
+			Caption: applyEscaping(strings.Join(
+				[]string{title, duration, creators, actors, description},
 				"\n",
-			),
+			)),
 		}, []interface{}{tb.ModeMarkdownV2, &tb.ReplyMarkup{
 			InlineKeyboard: [][]tb.InlineButton{{{
 				Text: "Где посмотреть?🙈",

@@ -89,9 +89,10 @@ var mockMovies = []*domain.Movie{
 		AgeRestriction: true,
 		FilmCrew: map[domain.Position]domain.Persons{
 			domain.Director: {"Джим Джармуш"},
-			domain.Actor:    {"Адам Драйвер", "Голшифте Фарахани", "Нелли"},
+			domain.Actor:    {"Адам Драйвер", "Голшифте Фарахани"},
 		},
-		Rating: domain.Rating{KP: 7.3, IMDB: 7.4},
+		Rating:      domain.Rating{KP: 7.3, IMDB: 7.4},
+		Description: "Жизнь Патерсона – сплошная романтика: он работает водителем автобуса в городе Патерсон, штат Нью-Джерси, а в свободное время пишет стихи для любимой жены Лоры. Патерсон облачает красоту повседневности в стихи и встречает поэтов повсюду – такова магия города - родины поэтов Аллена Гинзберга и Уильяма Карлоса Уильямса. Патерсон пишет в стол и даже не мечтает публиковаться, однако одно маленькое событие меняет его планы.",
 	},
 	{
 		ID:        "5e3d0adf47b50c9ff6b607c3",
@@ -100,9 +101,10 @@ var mockMovies = []*domain.Movie{
 		Duration:  110,
 		FilmCrew: map[domain.Position]domain.Persons{
 			domain.Director: {"Виктор Шамиров"},
-			domain.Actor:    {"Артем Калайджян", "Артем Карокозян", "Виктор Шамиров"},
+			domain.Actor:    {"Артем Калайджян", "Артем Карокозян"},
 		},
-		Rating: domain.Rating{KP: 5.5},
+		Rating:      domain.Rating{KP: 5.5},
+		Description: "Разборки в Сочи: герой на «копейке» запал на девушку обладателя BMW",
 	},
 	{
 		ID:        "5dfb89a47a972aad9ae9f915",
@@ -111,9 +113,10 @@ var mockMovies = []*domain.Movie{
 		Duration:  97,
 		FilmCrew: map[domain.Position]domain.Persons{
 			domain.Director: {"Алексей Нужный"},
-			domain.Actor:    {"Ростислав Хаит", "Мария Миронова", "Леонид Барац"},
+			domain.Actor:    {"Ростислав Хаит", "Мария Миронова"},
 		},
-		Rating: domain.Rating{KP: 6.7},
+		Rating:      domain.Rating{KP: 6.7},
+		Description: "Ирина Горбачёва и «Квартет И» в новогоднем сиквеле «Громкой связи»",
 	},
 	{
 		ID:        "5575fad0cc1c725c1b9865f2",
@@ -122,9 +125,10 @@ var mockMovies = []*domain.Movie{
 		Duration:  95,
 		FilmCrew: map[domain.Position]domain.Persons{
 			domain.Director: {"Джоэль Кроуфорд"},
-			domain.Actor:    {"Райан Рейнольдс", "Эмма Стоун", "Николас Кейдж"},
+			domain.Actor:    {"Райан Рейнольдс", "Эмма Стоун"},
 		},
-		Rating: domain.Rating{KP: 7.1, IMDB: 7.0},
+		Rating:      domain.Rating{KP: 7.1, IMDB: 7.0},
+		Description: "Новая часть франшизы о жизни первобытных людей",
 	},
 }
 
