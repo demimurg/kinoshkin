@@ -44,12 +44,13 @@ type movie struct {
 }
 
 type scheduleAgg struct {
-	db      *mongo.Database
-	tickets []ticket
-	movies  map[string]*movie
+	db          *mongo.Database
+	tickets     []ticket
+	movies      map[string]*movie
+	emptyMovies map[string]*movie
 }
 
-func (sa scheduleAgg) Aggregate() error {
+func (sa *scheduleAgg) Aggregate() error {
 	cinemasId, err := sa.collectCinemasID()
 	if err != nil {
 		return err
@@ -67,6 +68,9 @@ func (sa scheduleAgg) Aggregate() error {
 				id, err,
 			)
 		}
+	}
+	if len(sa.emptyMovies) != 0 {
+		pretty.Printf("Have %d half-empty movies:\n%# v", len(sa.emptyMovies), sa.emptyMovies)
 	}
 	if err := sa.extendMovies(); err != nil {
 		log.Println("Error occurred while extending movies: ", err)
@@ -97,7 +101,7 @@ func (sa scheduleAgg) Aggregate() error {
 	return nil
 }
 
-func (sa scheduleAgg) collectCinemasID() ([]string, error) {
+func (sa *scheduleAgg) collectCinemasID() ([]string, error) {
 	cursor, err := sa.db.Collection("cinemas").Find(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, err
@@ -116,7 +120,7 @@ func (sa scheduleAgg) collectCinemasID() ([]string, error) {
 	return ids, nil
 }
 
-func (sa scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
+func (sa *scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 	bytes, err := getScheduleJSON(cinemaId)
 	if err != nil {
 		return err
@@ -126,10 +130,6 @@ func (sa scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 		return err
 	}
 
-	var (
-		noPriceTickets int
-		emptyMovies    = make(map[string]movie)
-	)
 	for _, item := range page.S("schedule", "items").Children() {
 		event := item.S("event")
 		movie := movie{}
@@ -145,7 +145,7 @@ func (sa scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 		if !ok {
 			kpURL, ok = event.S("image", "source", "url").Data().(string)
 			if !ok || !strings.Contains(kpURL, "kinopoisk") {
-				emptyMovies[movie.ID] = movie
+				sa.emptyMovies[movie.ID] = &movie
 				continue
 			}
 		}
@@ -190,7 +190,8 @@ func (sa scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 				S("ticket", "price", "min").
 				Data().(float64)
 			if !ok {
-				noPriceTickets++
+				// todo: log no price tickets
+				continue
 			}
 
 			t.Time = startAt
@@ -199,23 +200,15 @@ func (sa scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 			sa.tickets = append(sa.tickets, t)
 		}
 	}
-	if noPriceTickets != 0 {
-		log.Printf(
-			"Cinema %s have %d ticket without price, parsed: %d\n",
-			cinemaId, noPriceTickets, len(sa.tickets),
-		)
-	}
-	if len(emptyMovies) != 0 {
-		pretty.Println("Not enough data:\n", emptyMovies)
-	}
 
 	return nil
 }
 
 func getScheduleJSON(cinemaId string) ([]byte, error) {
+	// todo: remove add 24 * time.Hour (debug only)
 	resp, err := http.Get(fmt.Sprintf(
 		cfg.ScheduleURL+"/%s/schedule_cinema?date=%s&city=saint-petersburg&limit=200",
-		cinemaId, time.Now().Format("2006-01-02"),
+		cinemaId, time.Now().Add(24*time.Hour).Format("2006-01-02"),
 	))
 	if err != nil {
 		return nil, err
@@ -225,7 +218,7 @@ func getScheduleJSON(cinemaId string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-func (sa scheduleAgg) extendMovies() error {
+func (sa *scheduleAgg) extendMovies() error {
 	for id, movie := range sa.movies {
 		bytes, err := getMovieExtraData(id)
 		if err != nil {

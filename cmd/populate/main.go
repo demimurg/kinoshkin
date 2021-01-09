@@ -11,9 +11,8 @@ import (
 
 func main() {
 	var ctx = context.TODO()
-	mongodb, err := mongo.Connect(ctx, options.Client().ApplyURI(
-		"mongodb+srv://"+cfg.MongoAggUrl+"/kinoshkin?retryWrites=true&w=majority",
-	))
+	uri := "mongodb+srv://" + cfg.MongoAggUrl + "/kinoshkin?retryWrites=true&w=majority"
+	mongodb, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatal("Can't connect to mongo database: ", err)
 	}
@@ -30,7 +29,7 @@ func main() {
 		case "cinemas":
 			_ = db.Collection("cinemas").Drop(ctx)
 			agg = aggregator.Cinemas(db)
-		case "movies":
+		case "schedule":
 			_ = db.Collection("tickets").Drop(ctx)
 			_ = db.Collection("movies").Drop(ctx)
 			agg = aggregator.Schedule(db)

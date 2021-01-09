@@ -15,5 +15,5 @@ func Cities(db *mongo.Database) Aggregator {
 }
 
 func Schedule(db *mongo.Database) Aggregator {
-	return scheduleAgg{db: db, movies: make(map[string]*movie)}
+	return &scheduleAgg{db: db, movies: make(map[string]*movie), emptyMovies: make(map[string]*movie)}
 }
