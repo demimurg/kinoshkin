@@ -49,11 +49,11 @@ func New(svc domain.Conferencier) BotServer {
 
 		switch m.Text {
 		case views.CinemasCmd.Text:
-			cinemas, _ := svc.FindCinemas(m.Sender.ID, domain.P{})
+			cinemas, _ := svc.FindCinemas(m.Sender.ID, domain.P{Limit: 6})
 			msg = "cinemas"
 			buttons = views.CinemasList(cinemas)
 		case views.MoviesCmd.Text:
-			movies, _ := svc.FindMovies(m.Sender.ID, domain.P{})
+			movies, _ := svc.FindMovies(m.Sender.ID, domain.P{Limit: 6})
 			msg = "movies"
 			buttons = views.MoviesList(movies)
 		default:
@@ -83,7 +83,7 @@ func New(svc domain.Conferencier) BotServer {
 			schedule, _ := svc.GetCinemaSchedule(id)
 			msg, opts = views.CinemaCard(cinema, schedule)
 		case views.MovieSchedulePrefix:
-			schedule, _ := svc.GetMovieSchedule(id)
+			schedule, _ := svc.GetMovieSchedule(cb.Sender.ID, id)
 			msg, opts = views.MovieScheduleTable(schedule)
 		default:
 			return

@@ -21,8 +21,9 @@ type Session struct {
 
 // CinemasRepo provides basic db methods for cinemas collection
 type CinemasRepo interface {
+	Get(cinemaID string) (*Cinema, error)
 	// FindNearby search cinemas near user location
-	FindNearby(lat, long float32) ([]*Cinema, error)
+	FindNearby(lat, long float32, pag P) ([]*Cinema, error)
 	FindWithMovie(lat, long float32, movieID string) ([]*Cinema, error)
-	GetSchedule(cinemaID string) (map[*Movie][]*Session, error)
+	GetSchedule(cinemaID string) (map[*Movie][]Session, error)
 }

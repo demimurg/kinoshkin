@@ -44,7 +44,7 @@ type Movie struct {
 
 // MoviesRepo work with movies collection
 type MoviesRepo interface {
-	Find(cityID string) (*Movie, error)
-	FindByRating() ([]*Movie, error)
-	FindMany(ids ...string) ([]*Movie, error)
+	Get(movID string) (*Movie, error)
+	FindByRating(cityID string, pag P) ([]*Movie, error)
+	GetSchedule(movieID, cityID string) (map[*Cinema][]Session, error)
 }
