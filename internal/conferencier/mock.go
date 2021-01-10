@@ -13,10 +13,16 @@ type Mock struct {
 }
 
 func (m Mock) FindMovies(userID int, pag domain.P) ([]*domain.Movie, error) {
+	sort.Slice(mockMovies, func(i, j int) bool {
+		return mockMovies[i].Rating.KP > mockMovies[j].Rating.KP
+	})
 	return mockMovies, nil
 }
 
 func (m Mock) FindCinemas(userID int, pag domain.P) ([]*domain.Cinema, error) {
+	sort.Slice(mockCinemas, func(i, j int) bool {
+		return mockCinemas[i].Distance < mockCinemas[j].Distance
+	})
 	return mockCinemas, nil
 }
 
@@ -29,7 +35,7 @@ func (m Mock) GetMovie(movieID string) (*domain.Movie, error) {
 	return nil, nil
 }
 
-func (m Mock) GetMovieSchedule(movieID string) (map[*domain.Cinema][]domain.Session, error) {
+func (m Mock) GetMovieSchedule(userID int, movieID string) (map[*domain.Cinema][]domain.Session, error) {
 	schedule := make(map[*domain.Cinema][]domain.Session)
 	for _, cinema := range mockCinemas {
 		schedule[cinema] = genMockSessions()
