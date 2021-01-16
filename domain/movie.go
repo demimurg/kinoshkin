@@ -42,9 +42,15 @@ type Movie struct {
 	Rating         Rating
 }
 
+// CinemaWithSessions is a schedule of the certain movie in some cinema
+type CinemaWithSessions struct {
+	*Cinema
+	Sessions []Session
+}
+
 // MoviesRepo work with movies collection
 type MoviesRepo interface {
 	Get(movID string) (*Movie, error)
 	FindByRating(cityID string, pag P) ([]*Movie, error)
-	GetSchedule(movieID, cityID string) (map[*Cinema][]Session, error)
+	GetSchedule(movieID, cityID string) ([]CinemaWithSessions, error)
 }

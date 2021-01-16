@@ -11,9 +11,9 @@ type Conferencier interface {
 	FindCinemas(userID int, pag P) ([]*Cinema, error)
 
 	GetMovie(movieID string) (*Movie, error)
-	GetMovieSchedule(userID int, movieID string) (map[*Cinema][]Session, error)
+	GetMovieSchedule(userID int, movieID string) ([]CinemaWithSessions, error)
 	GetCinema(cinemaID string) (*Cinema, error)
-	GetCinemaSchedule(cinemaID string) (map[*Movie][]Session, error)
+	GetCinemaSchedule(cinemaID string) ([]MovieWithSessions, error)
 
 	UpdateUserLocation(userID int, lat, long float32) error
 	RegisterUser(userID int, name string) error

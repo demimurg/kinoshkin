@@ -19,7 +19,7 @@ func MoviesList(movies []*domain.Movie) [][]tb.InlineButton {
 	for _, mov := range movies {
 		table = append(table, []tb.InlineButton{
 			{
-				Text: fmt.Sprintf("%s (%.2f)", mov.Title, mov.Rating.KP),
+				Text: fmt.Sprintf("%s  | %.1f |", mov.Title, mov.Rating.KP),
 				Data: Encode(MoviePrefix, mov.ID),
 			},
 		})
@@ -70,20 +70,20 @@ func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
 		}}
 }
 
-func CinemaCard(cinema *domain.Cinema, schedule map[*domain.Movie][]domain.Session) (msg interface{}, opts []interface{}) {
+func CinemaCard(cinema *domain.Cinema, schedule []domain.MovieWithSessions) (msg interface{}, opts []interface{}) {
 	address := cinema.Address
 	if len(cinema.Metro) > 0 {
 		address = "🚇" + strings.Join(cinema.Metro, ", ") + "\n" + address
 	}
 
 	var table [][]tb.InlineButton
-	for mov, sess := range schedule {
+	for _, mov := range schedule {
 		movTitle := fmt.Sprintf("%s (%.1f)", mov.Title, mov.Rating.KP)
 		table = append(table, []tb.InlineButton{{
 			Text: movTitle,
 			Data: Encode(MoviePrefix, mov.ID),
 		}})
-		table = append(table, renderSessions(sess)...)
+		table = append(table, renderSessions(mov.Sessions)...)
 	}
 
 	return &tb.Venue{
@@ -96,15 +96,15 @@ func CinemaCard(cinema *domain.Cinema, schedule map[*domain.Movie][]domain.Sessi
 		}}
 }
 
-func MovieScheduleTable(schedule map[*domain.Cinema][]domain.Session) (interface{}, []interface{}) {
+func MovieScheduleTable(schedule []domain.CinemaWithSessions) (interface{}, []interface{}) {
 	var table [][]tb.InlineButton
-	for cin, sess := range schedule {
+	for _, cin := range schedule {
 		cinemaTitle := fmt.Sprintf("%s ~ %.2fкм", cin.Name, float32(cin.Distance)/1000)
 		table = append(table, []tb.InlineButton{{
 			Text: cinemaTitle,
 			Data: Encode(CinemaPrefix, cin.ID),
 		}})
-		table = append(table, renderSessions(sess)...)
+		table = append(table, renderSessions(cin.Sessions)...)
 	}
 
 	msg := fmt.Sprintf("_Расписание на %s_", time.Now().Format("02.01.2006"))

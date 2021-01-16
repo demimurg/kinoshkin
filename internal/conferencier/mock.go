@@ -35,11 +35,17 @@ func (m Mock) GetMovie(movieID string) (*domain.Movie, error) {
 	return nil, nil
 }
 
-func (m Mock) GetMovieSchedule(userID int, movieID string) (map[*domain.Cinema][]domain.Session, error) {
-	schedule := make(map[*domain.Cinema][]domain.Session)
-	for _, cinema := range mockCinemas {
-		schedule[cinema] = genMockSessions()
+func (m Mock) GetMovieSchedule(userID int, movieID string) ([]domain.CinemaWithSessions, error) {
+	var schedule []domain.CinemaWithSessions
+	for _, cin := range mockCinemas {
+		schedule = append(schedule, domain.CinemaWithSessions{
+			Cinema:   cin,
+			Sessions: genMockSessions(),
+		})
 	}
+	sort.Slice(schedule, func(i, j int) bool {
+		return schedule[i].Cinema.Distance < schedule[j].Cinema.Distance
+	})
 	return schedule, nil
 }
 
@@ -52,11 +58,17 @@ func (m Mock) GetCinema(cinemaID string) (*domain.Cinema, error) {
 	return nil, nil
 }
 
-func (m Mock) GetCinemaSchedule(cinemaID string) (map[*domain.Movie][]domain.Session, error) {
-	schedule := make(map[*domain.Movie][]domain.Session)
+func (m Mock) GetCinemaSchedule(cinemaID string) ([]domain.MovieWithSessions, error) {
+	var schedule []domain.MovieWithSessions
 	for _, mov := range mockMovies {
-		schedule[mov] = genMockSessions()
+		schedule = append(schedule, domain.MovieWithSessions{
+			Movie:    mov,
+			Sessions: genMockSessions(),
+		})
 	}
+	sort.Slice(schedule, func(i, j int) bool {
+		return schedule[i].Movie.Rating.KP > schedule[j].Movie.Rating.KP
+	})
 	return schedule, nil
 }
 

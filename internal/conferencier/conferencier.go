@@ -30,7 +30,7 @@ func (c conf) GetMovie(movieID string) (*domain.Movie, error) {
 	return c.movies.Get(movieID)
 }
 
-func (c conf) GetMovieSchedule(userID int, movieID string) (map[*domain.Cinema][]domain.Session, error) {
+func (c conf) GetMovieSchedule(userID int, movieID string) ([]domain.CinemaWithSessions, error) {
 	user, err := c.users.Get(userID)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (c conf) GetCinema(cinemaID string) (*domain.Cinema, error) {
 	return c.cinemas.Get(cinemaID)
 }
 
-func (c conf) GetCinemaSchedule(cinemaID string) (map[*domain.Movie][]domain.Session, error) {
+func (c conf) GetCinemaSchedule(cinemaID string) ([]domain.MovieWithSessions, error) {
 	return c.cinemas.GetSchedule(cinemaID)
 }
 
