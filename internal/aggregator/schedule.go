@@ -28,19 +28,20 @@ type ticket struct {
 }
 
 type movie struct {
-	ID             string    `bson:"_id"`
-	KpId           string    `bson:"kp_id"`
-	Title          string    `bson:"title"`
-	TitleOriginal  string    `bson:"title_original,omitempty"`
-	Duration       int       `bson:"duration,omitempty"`
-	DateReleased   time.Time `bson:"date_released"`
-	LandscapeImg   string    `bson:"landscape_img"`
-	Description    string    `bson:"description"`
-	RatingKP       float64   `bson:"rating_kp,omitempty"`
-	RatingIMDB     float64   `bson:"rating_imdb,omitempty"`
-	AgeRestriction string    `bson:"age_restriction,omitempty"`
-	Trailer        string    `bson:"trailer,omitempty"`
-	TrailerName    string    `bson:"trailer_name,omitempty"`
+	ID             string              `bson:"_id"`
+	KpId           string              `bson:"kp_id"`
+	Title          string              `bson:"title"`
+	TitleOriginal  string              `bson:"title_original,omitempty"`
+	Staff          map[string][]string `bson:"staff"`
+	Duration       int                 `bson:"duration,omitempty"`
+	DateReleased   time.Time           `bson:"date_released,omitempty"`
+	LandscapeImg   string              `bson:"landscape_img"`
+	Description    string              `bson:"description"`
+	RatingKP       float64             `bson:"rating_kp,omitempty"`
+	RatingIMDB     float64             `bson:"rating_imdb,omitempty"`
+	AgeRestriction string              `bson:"age_restriction,omitempty"`
+	Trailer        string              `bson:"trailer,omitempty"`
+	TrailerName    string              `bson:"trailer_name,omitempty"`
 }
 
 type scheduleAgg struct {
@@ -69,6 +70,7 @@ func (sa *scheduleAgg) Aggregate() error {
 			)
 		}
 	}
+	// todo: handle empty movies, don't discard them
 	if len(sa.emptyMovies) != 0 {
 		pretty.Printf("Have %d half-empty movies:\n%# v", len(sa.emptyMovies), sa.emptyMovies)
 	}
@@ -151,10 +153,9 @@ func (sa *scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 		}
 		url := strings.Split(kpURL, "/")
 		movie.KpId = url[len(url)-1]
-		movie.DateReleased, _ = time.Parse(
-			"2006-01-02",
-			event.S("dateReleased").Data().(string),
-		)
+
+		dateRaw, _ := event.S("dateReleased").Data().(string)
+		movie.DateReleased, _ = time.Parse("2006-01-02", dateRaw)
 		movie.RatingKP, _ = event.
 			S("kinopoisk", "value").
 			Data().(float64)
@@ -220,22 +221,35 @@ func getScheduleJSON(cinemaId string) ([]byte, error) {
 
 func (sa *scheduleAgg) extendMovies() error {
 	for id, movie := range sa.movies {
-		bytes, err := getMovieExtraData(id)
+		movData, err := getFromKpApi(movieDataUri, id)
 		if err != nil {
 			return err
 		}
-		movData, err := gabs.ParseJSON(bytes)
+		trailers, err := getFromKpApi(trailersUri, id)
+		if err != nil {
+			return err
+		}
+		staff, err := getFromKpApi(staffUri, id)
 		if err != nil {
 			return err
 		}
 
-		bytes, err = getMovieTrailers(id)
-		if err != nil {
-			return err
-		}
-		trailers, err := gabs.ParseJSON(bytes)
-		if err != nil {
-			return err
+		movie.Staff = make(map[string][]string)
+		for _, employee := range staff.Children() {
+			empKey, _ := employee.S("professionKey").Data().(string)
+			switch empKey {
+			case "DIRECTOR", "WRITER", "OPERATOR", "COMPOSITOR":
+			case "ACTOR":
+				if len(movie.Staff["actor"]) > 6 {
+					continue
+				}
+			default:
+				continue
+			}
+
+			key := strings.ToLower(empKey)
+			empName, _ := employee.S("nameRu").Data().(string)
+			movie.Staff[key] = append(movie.Staff[key], empName)
 		}
 
 		duration, ok := movData.S("data", "filmLength").Data().(string)
@@ -261,38 +275,29 @@ func convertToMins(dur string) int {
 	return 60*h + m
 }
 
-func getMovieExtraData(id string) ([]byte, error) {
+const (
+	movieDataUri = "https://kinopoiskapiunofficial.tech/api/v2.1/films/%s?append_to_response=RATING"
+	trailersUri  = "https://kinopoiskapiunofficial.tech/api/v2.1/films/%s/videos"
+	staffUri     = "https://kinopoiskapiunofficial.tech/api/v1/staff?filmId=%s"
+)
+
+func getFromKpApi(uri, id string) (*gabs.Container, error) {
 	client := http.Client{}
-	req, _ := http.NewRequest(
+	req, err := http.NewRequest(
 		"GET",
-		"https://kinopoiskapiunofficial.tech/api/v2.1/films/"+id+"?append_to_response=RATING",
+		fmt.Sprintf(uri, id),
 		nil,
 	)
-	req.Header.Set("X-API-KEY", cfg.TokenKP)
+	if err != nil {
+		return nil, err
+	}
 
+	req.Header.Set("X-API-KEY", cfg.TokenKP)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	return ioutil.ReadAll(resp.Body)
-}
-
-func getMovieTrailers(id string) ([]byte, error) {
-	client := http.Client{}
-	req, _ := http.NewRequest(
-		"GET",
-		"https://kinopoiskapiunofficial.tech/api/v2.1/films/"+id+"/videos",
-		nil,
-	)
-	req.Header.Set("X-API-KEY", cfg.TokenKP)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	return ioutil.ReadAll(resp.Body)
+	return gabs.ParseJSONBuffer(resp.Body)
 }
