@@ -274,7 +274,7 @@ func (sa *scheduleAgg) extendMovies() error {
 func convertToMins(dur string) int {
 	t := strings.Split(dur, ":")
 	if len(t) != 2 {
-		return 100
+		return 0
 	}
 
 	h, _ := strconv.Atoi(t[0])

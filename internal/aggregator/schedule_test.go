@@ -9,7 +9,7 @@ func Test_convertToMins(t *testing.T) {
 	}{
 		{"1:37", 97},
 		{"0:24", 24},
-		{"abc", 100},
+		{"abc", 0},
 	}
 	for _, tt := range tests {
 		if got := convertToMins(tt.dur); got != tt.want {
