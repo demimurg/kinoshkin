@@ -23,15 +23,10 @@ func main() {
 		var agg aggregator.Aggregator
 		switch name {
 		case "cities":
-			// todo: remove later
-			_ = db.Collection("cities").Drop(ctx)
 			agg = aggregator.Cities(db)
 		case "cinemas":
-			_ = db.Collection("cinemas").Drop(ctx)
 			agg = aggregator.Cinemas(db)
 		case "schedule":
-			_ = db.Collection("tickets").Drop(ctx)
-			_ = db.Collection("movies").Drop(ctx)
 			agg = aggregator.Schedule(db)
 		default:
 			fmt.Printf("wrong collection - %q, use cities/cinemas/movies", name)

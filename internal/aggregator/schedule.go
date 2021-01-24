@@ -58,8 +58,7 @@ func (sa *scheduleAgg) Aggregate() error {
 	}
 
 	bar := progressbar.Default(int64(len(cinemasId)),
-		"Schedule downloading...")
-
+		"Cinemas aggregating...")
 	for _, id := range cinemasId {
 		bar.Add(1)
 		err := sa.aggregateMoviesAndTickets(id)
@@ -70,6 +69,8 @@ func (sa *scheduleAgg) Aggregate() error {
 			)
 		}
 	}
+	_ = bar.Clear()
+
 	// todo: handle empty movies, don't discard them
 	if len(sa.emptyMovies) != 0 {
 		pretty.Printf("Have %d half-empty movies:\n%# v", len(sa.emptyMovies), sa.emptyMovies)
@@ -95,7 +96,7 @@ func (sa *scheduleAgg) Aggregate() error {
 	if err != nil {
 		return err
 	}
-	_, err = sa.db.Collection("tickets").InsertMany(ctx, tickets)
+	_, err = sa.db.Collection("sessions").InsertMany(ctx, tickets)
 	if err != nil {
 		return err
 	}
@@ -220,6 +221,9 @@ func getScheduleJSON(cinemaId string) ([]byte, error) {
 }
 
 func (sa *scheduleAgg) extendMovies() error {
+	bar := progressbar.Default(int64(len(sa.movies)),
+		"Collecting movies data")
+
 	for id, movie := range sa.movies {
 		movData, err := getFromKpApi(movieDataUri, id)
 		if err != nil {
@@ -260,7 +264,10 @@ func (sa *scheduleAgg) extendMovies() error {
 		movie.RatingIMDB, _ = movData.S("rating", "ratingImdb").Data().(float64)
 		movie.Trailer, _ = trailers.S("trailers", "0", "url").Data().(string)
 		movie.TrailerName, _ = trailers.S("trailers", "0", "name").Data().(string)
+		bar.Add(1)
 	}
+	_ = bar.Clear()
+
 	return nil
 }
 
