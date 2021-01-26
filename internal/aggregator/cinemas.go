@@ -20,13 +20,13 @@ type loc struct {
 }
 
 type cinema struct {
-	ID       string   `bson:"_id"`
-	Name     string   `bson:"name"`
-	Address  string   `bson:"address"`
-	CityID   string   `bson:"city_id"`
-	Timezone string   `bson:"timezone"`
-	Metros   []string `bson:"metros,omitempty"`
-	Location loc      `bson:"location"`
+	ID          string    `bson:"_id"`
+	Name        string    `bson:"name"`
+	Address     string    `bson:"address"`
+	CityID      string    `bson:"city_id"`
+	Timezone    string    `bson:"timezone"`
+	Metros      []string  `bson:"metros,omitempty"`
+	Coordinates []float64 `bson:"coordinates"`
 }
 
 type cinemaAgg struct {
@@ -62,12 +62,9 @@ func (c cinemaAgg) Aggregate() error {
 			CityID:   city["id"].(string),
 			Timezone: city["timezone"].(string),
 			Metros:   extractMetros(raw["metro"]),
-			Location: loc{
-				Type: "Point",
-				Coordinates: coords{
-					Longitude: coordinates["longitude"].(float64),
-					Latitude:  coordinates["latitude"].(float64),
-				},
+			Coordinates: []float64{
+				coordinates["longitude"].(float64),
+				coordinates["latitude"].(float64),
 			},
 		}
 	}
