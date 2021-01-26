@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,12 +20,9 @@ import (
 )
 
 type ticket struct {
-	ID       string    `bson:"_id"`
-	MovieId  string    `bson:"movie_id"`
-	CinemaId string    `bson:"cinema_id"`
-	City     string    `bson:"city"`
-	Time     time.Time `bson:"time"`
-	Price    int       `bson:"price"`
+	ID    string    `bson:"_id"`
+	Time  time.Time `bson:"time"`
+	Price int       `bson:"price"`
 }
 
 type movie struct {
@@ -44,11 +42,16 @@ type movie struct {
 	TrailerName    string              `bson:"trailer_name,omitempty"`
 }
 
+type schedule struct {
+	cinemaId string
+	sessions map[string][]ticket
+}
+
 type scheduleAgg struct {
-	db          *mongo.Database
-	tickets     []ticket
-	movies      map[string]*movie
-	emptyMovies map[string]*movie
+	db              *mongo.Database
+	cinemasSchedule []schedule
+	movies          map[string]*movie
+	emptyMovies     map[string]*movie
 }
 
 func (sa *scheduleAgg) Aggregate() error {
@@ -61,7 +64,7 @@ func (sa *scheduleAgg) Aggregate() error {
 		"Cinemas aggregating...")
 	for _, id := range cinemasId {
 		bar.Add(1)
-		err := sa.aggregateMoviesAndTickets(id)
+		err := sa.aggregateSchedule(id)
 		if err != nil {
 			log.Printf(
 				"Cinema (%s): fetching schedule error - %s\n",
@@ -83,22 +86,27 @@ func (sa *scheduleAgg) Aggregate() error {
 	for _, mov := range sa.movies {
 		movies = append(movies, *mov)
 	}
-	tickets := make([]interface{}, 0, len(sa.tickets))
-	for _, t := range sa.tickets {
-		tickets = append(tickets, t)
-	}
 
 	ctx := context.TODO()
-	opts := &options.InsertManyOptions{}
-	opts = opts.SetOrdered(false)
+	opts := &options.UpdateOptions{}
+	opts = opts.SetUpsert(true)
 
-	_, err = sa.db.Collection("movies").InsertMany(ctx, movies, opts)
-	if err != nil {
-		return err
+	for _, mov := range sa.movies {
+		_, err = sa.db.Collection("movies").UpdateOne(ctx, bson.M{"_id": mov.ID}, bson.M{
+			"$set": interface{}(*mov),
+		}, opts)
+		if err != nil {
+			return err
+		}
 	}
-	_, err = sa.db.Collection("sessions").InsertMany(ctx, tickets)
-	if err != nil {
-		return err
+
+	for _, cs := range sa.cinemasSchedule {
+		_, err = sa.db.Collection("cinemas").UpdateOne(ctx, bson.M{"_id": cs.cinemaId}, bson.M{
+			"$set": bson.M{"schedule": cs.sessions},
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -123,7 +131,7 @@ func (sa *scheduleAgg) collectCinemasID() ([]string, error) {
 	return ids, nil
 }
 
-func (sa *scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
+func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 	bytes, err := getScheduleJSON(cinemaId)
 	if err != nil {
 		return err
@@ -131,6 +139,11 @@ func (sa *scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 	page, err := gabs.ParseJSON(bytes)
 	if err != nil {
 		return err
+	}
+
+	cinemaSchedule := schedule{
+		cinemaId: cinemaId,
+		sessions: make(map[string][]ticket),
 	}
 
 	for _, item := range page.S("schedule", "items").Children() {
@@ -170,13 +183,7 @@ func (sa *scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 		}
 
 		for _, session := range sessions {
-			t := ticket{
-				MovieId:  movie.ID,
-				CinemaId: cinemaId,
-				City:     "saint-petersburg",
-			}
-
-			t.ID, _ = session.S("ticket", "id").Data().(string)
+			ticketID, _ := session.S("ticket", "id").Data().(string)
 			startAt, err := time.Parse(
 				"2006-01-02T15:04:05",
 				strings.Trim(session.S("datetime").Data().(string), "\""),
@@ -196,11 +203,22 @@ func (sa *scheduleAgg) aggregateMoviesAndTickets(cinemaId string) error {
 				continue
 			}
 
-			t.Time = startAt
-			t.Price = int(price / 100)
-
-			sa.tickets = append(sa.tickets, t)
+			cinemaSchedule.sessions[movie.ID] = append(cinemaSchedule.sessions[movie.ID], ticket{
+				ID:    ticketID,
+				Time:  startAt,
+				Price: int(price / 100),
+			})
 		}
+
+		sort.Slice(cinemaSchedule.sessions[movie.ID], func(i, j int) bool {
+			return cinemaSchedule.sessions[movie.ID][i].Time.Before(
+				cinemaSchedule.sessions[movie.ID][j].Time,
+			)
+		})
+	}
+
+	if len(cinemaSchedule.sessions) > 0 {
+		sa.cinemasSchedule = append(sa.cinemasSchedule, cinemaSchedule)
 	}
 
 	return nil
@@ -258,7 +276,7 @@ func (sa *scheduleAgg) extendMovies() error {
 
 		duration, ok := movData.S("data", "filmLength").Data().(string)
 		if ok {
-			movie.Duration = convertToMins(duration)
+			movie.Duration = convertToMinutes(duration)
 		}
 
 		movie.RatingIMDB, _ = movData.S("rating", "ratingImdb").Data().(float64)
@@ -271,7 +289,7 @@ func (sa *scheduleAgg) extendMovies() error {
 	return nil
 }
 
-func convertToMins(dur string) int {
+func convertToMinutes(dur string) int {
 	t := strings.Split(dur, ":")
 	if len(t) != 2 {
 		return 0

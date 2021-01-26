@@ -12,8 +12,8 @@ func Test_convertToMins(t *testing.T) {
 		{"abc", 0},
 	}
 	for _, tt := range tests {
-		if got := convertToMins(tt.dur); got != tt.want {
-			t.Errorf("convertToMins() = %v, want %v", got, tt.want)
+		if got := convertToMinutes(tt.dur); got != tt.want {
+			t.Errorf("convertToMinutes() = %v, want %v", got, tt.want)
 		}
 	}
 }
