@@ -10,6 +10,8 @@ const (
 	Screenwriter
 	// Actor (Angelina Jolie, Leonardo DiCaprio, etc)
 	Actor
+	// Operator the most underrated man
+	Operator
 )
 
 // Persons is a people working on one position
@@ -37,7 +39,7 @@ type Movie struct {
 	PosterURL      string
 	Genre          Genre
 	Duration       int
-	AgeRestriction bool
+	AgeRestriction string
 	FilmCrew       map[Position]Persons
 	Rating         Rating
 }
@@ -52,5 +54,5 @@ type CinemaWithSessions struct {
 type MoviesRepo interface {
 	Get(movID string) (*Movie, error)
 	FindByRating(cityID string, pag P) ([]*Movie, error)
-	GetSchedule(movieID, cityID string) ([]CinemaWithSessions, error)
+	GetSchedule(movieID, cityID string, pag P) ([]CinemaWithSessions, error)
 }

@@ -30,21 +30,21 @@ func (c conf) GetMovie(movieID string) (*domain.Movie, error) {
 	return c.movies.Get(movieID)
 }
 
-func (c conf) GetMovieSchedule(userID int, movieID string) ([]domain.CinemaWithSessions, error) {
+func (c conf) GetMovieSchedule(userID int, movieID string, pag domain.P) ([]domain.CinemaWithSessions, error) {
 	user, err := c.users.Get(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.movies.GetSchedule(movieID, user.City)
+	return c.movies.GetSchedule(movieID, user.City, pag)
 }
 
 func (c conf) GetCinema(cinemaID string) (*domain.Cinema, error) {
 	return c.cinemas.Get(cinemaID)
 }
 
-func (c conf) GetCinemaSchedule(cinemaID string) ([]domain.MovieWithSessions, error) {
-	return c.cinemas.GetSchedule(cinemaID)
+func (c conf) GetCinemaSchedule(cinemaID string, pag domain.P) ([]domain.MovieWithSessions, error) {
+	return c.cinemas.GetSchedule(cinemaID, pag)
 }
 
 func (c conf) UpdateUserLocation(userID int, lat, long float32) error {
