@@ -35,7 +35,7 @@ func getRootDir() string {
 	dirs := strings.Split(cwd, string(os.PathSeparator))
 	dirs[0] = string(filepath.Separator) + dirs[0]
 	for i, dir := range dirs {
-		if dir == "internal" {
+		if dir == "internal" || dir == "cmd" {
 			dirs = dirs[:i]
 			break
 		}
