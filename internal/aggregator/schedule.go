@@ -19,39 +19,45 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type ticket struct {
+type movie struct {
+	ID            string `bson:"_id"`
+	KpId          string `bson:"kp_id"`
+	Title         string `bson:"title"`
+	TitleOriginal string `bson:"title_original,omitempty"`
+	Rating        struct {
+		KP   float64 `bson:"kp,omitempty"`
+		IMDb float64 `bson:"imdb,omitempty"`
+	} `bson:"rating,omitempty"`
+	AgeRestriction string              `bson:"age_restriction,omitempty"`
+	Duration       int                 `bson:"duration,omitempty"`
+	Description    string              `bson:"description"`
+	Staff          map[string][]string `bson:"staff"`
+	LandscapeImg   string              `bson:"landscape_img"`
+	Trailer        struct {
+		Name string `bson:"name,omitempty"`
+		Url  string `bson:"url,omitempty"`
+	} `bson:"trailer,omitempty"`
+	DateReleased time.Time `bson:"date_released,omitempty"`
+}
+
+type schedule struct {
+	CinemaId     string     `bson:"cinema_id"`
+	MovieId      string     `bson:"movie_id"`
+	LastShowtime time.Time  `bson:"last_showtime"`
+	Showtimes    []showtime `bson:"showtimes"`
+}
+
+type showtime struct {
 	ID    string    `bson:"_id"`
 	Time  time.Time `bson:"time"`
 	Price int       `bson:"price"`
 }
 
-type movie struct {
-	ID             string              `bson:"_id"`
-	KpId           string              `bson:"kp_id"`
-	Title          string              `bson:"title"`
-	TitleOriginal  string              `bson:"title_original,omitempty"`
-	Staff          map[string][]string `bson:"staff"`
-	Duration       int                 `bson:"duration,omitempty"`
-	DateReleased   time.Time           `bson:"date_released,omitempty"`
-	LandscapeImg   string              `bson:"landscape_img"`
-	Description    string              `bson:"description"`
-	RatingKP       float64             `bson:"rating_kp,omitempty"`
-	RatingIMDB     float64             `bson:"rating_imdb,omitempty"`
-	AgeRestriction string              `bson:"age_restriction,omitempty"`
-	Trailer        string              `bson:"trailer,omitempty"`
-	TrailerName    string              `bson:"trailer_name,omitempty"`
-}
-
-type schedule struct {
-	cinemaId string
-	sessions map[string][]ticket
-}
-
 type scheduleAgg struct {
-	db              *mongo.Database
-	cinemasSchedule []schedule
-	movies          map[string]*movie
-	emptyMovies     map[string]*movie
+	db          *mongo.Database
+	schedules   []interface{}
+	movies      map[string]*movie
+	emptyMovies map[string]*movie
 }
 
 func (sa *scheduleAgg) Aggregate() error {
@@ -61,7 +67,7 @@ func (sa *scheduleAgg) Aggregate() error {
 	}
 
 	bar := progressbar.Default(int64(len(cinemasId)),
-		"Cinemas aggregating...")
+		"Cinemas schedule aggregating...")
 	for _, id := range cinemasId {
 		bar.Add(1)
 		err := sa.aggregateSchedule(id)
@@ -99,17 +105,9 @@ func (sa *scheduleAgg) Aggregate() error {
 			return err
 		}
 	}
+	_, err = sa.db.Collection("schedule").InsertMany(ctx, sa.schedules)
 
-	for _, cs := range sa.cinemasSchedule {
-		_, err = sa.db.Collection("cinemas").UpdateOne(ctx, bson.M{"_id": cs.cinemaId}, bson.M{
-			"$set": bson.M{"schedule": cs.sessions},
-		})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return err
 }
 
 func (sa *scheduleAgg) collectCinemasID() ([]string, error) {
@@ -141,11 +139,6 @@ func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 		return err
 	}
 
-	cinemaSchedule := schedule{
-		cinemaId: cinemaId,
-		sessions: make(map[string][]ticket),
-	}
-
 	for _, item := range page.S("schedule", "items").Children() {
 		event := item.S("event")
 		movie := movie{}
@@ -170,19 +163,20 @@ func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 
 		dateRaw, _ := event.S("dateReleased").Data().(string)
 		movie.DateReleased, _ = time.Parse("2006-01-02", dateRaw)
-		movie.RatingKP, _ = event.
+		movie.Rating.KP, _ = event.
 			S("kinopoisk", "value").
 			Data().(float64)
 
 		sa.movies[movie.KpId] = &movie
 
-		// ignore different formats for sessions
-		var sessions []*gabs.Container
+		// ignore different formats (like "2D", "3D") for sessions
+		var jsonSessions []*gabs.Container
 		for _, format := range item.S("schedule").Children() {
-			sessions = append(sessions, format.S("sessions").Children()...)
+			jsonSessions = append(jsonSessions, format.S("sessions").Children()...)
 		}
 
-		for _, session := range sessions {
+		var showtimes []showtime
+		for _, session := range jsonSessions {
 			ticketID, _ := session.S("ticket", "id").Data().(string)
 			startAt, err := time.Parse(
 				"2006-01-02T15:04:05",
@@ -190,7 +184,7 @@ func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 			)
 			if err != nil {
 				log.Printf(
-					"ticket time (%q) parsing error\n",
+					"showtime time (%q) parsing error\n",
 					session.S("datetime").Data().(string),
 				)
 				continue
@@ -203,22 +197,27 @@ func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 				continue
 			}
 
-			cinemaSchedule.sessions[movie.ID] = append(cinemaSchedule.sessions[movie.ID], ticket{
+			showtimes = append(showtimes, showtime{
 				ID:    ticketID,
 				Time:  startAt,
 				Price: int(price / 100),
 			})
 		}
 
-		sort.Slice(cinemaSchedule.sessions[movie.ID], func(i, j int) bool {
-			return cinemaSchedule.sessions[movie.ID][i].Time.Before(
-				cinemaSchedule.sessions[movie.ID][j].Time,
+		sort.Slice(showtimes, func(i, j int) bool {
+			return showtimes[i].Time.Before(
+				showtimes[j].Time,
 			)
 		})
-	}
 
-	if len(cinemaSchedule.sessions) > 0 {
-		sa.cinemasSchedule = append(sa.cinemasSchedule, cinemaSchedule)
+		if len(showtimes) > 0 {
+			sa.schedules = append(sa.schedules, schedule{
+				CinemaId:     cinemaId,
+				MovieId:      movie.ID,
+				LastShowtime: showtimes[len(showtimes)-1].Time,
+				Showtimes:    showtimes,
+			})
+		}
 	}
 
 	return nil
@@ -240,7 +239,7 @@ func getScheduleJSON(cinemaId string) ([]byte, error) {
 
 func (sa *scheduleAgg) extendMovies() error {
 	bar := progressbar.Default(int64(len(sa.movies)),
-		"Collecting movies data")
+		"Extending movies data")
 
 	for id, movie := range sa.movies {
 		movData, err := getFromKpApi(movieDataUri, id)
@@ -279,9 +278,9 @@ func (sa *scheduleAgg) extendMovies() error {
 			movie.Duration = convertToMinutes(duration)
 		}
 
-		movie.RatingIMDB, _ = movData.S("rating", "ratingImdb").Data().(float64)
-		movie.Trailer, _ = trailers.S("trailers", "0", "url").Data().(string)
-		movie.TrailerName, _ = trailers.S("trailers", "0", "name").Data().(string)
+		movie.Rating.IMDb, _ = movData.S("rating", "ratingImdb").Data().(float64)
+		movie.Trailer.Url, _ = trailers.S("trailers", "0", "url").Data().(string)
+		movie.Trailer.Name, _ = trailers.S("trailers", "0", "name").Data().(string)
 		bar.Add(1)
 	}
 	_ = bar.Clear()

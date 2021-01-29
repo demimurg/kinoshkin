@@ -23,5 +23,6 @@ func Cities(db *mongo.Database) Aggregator {
 }
 
 func Schedule(db *mongo.Database) Aggregator {
+	_ = db.Collection("schedule").Drop(ctx)
 	return &scheduleAgg{db: db, movies: make(map[string]*movie), emptyMovies: make(map[string]*movie)}
 }
