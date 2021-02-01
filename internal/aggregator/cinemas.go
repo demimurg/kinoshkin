@@ -9,14 +9,24 @@ import (
 	"net/http"
 )
 
+type coords struct {
+	Longitude float64 `bson:"longitude"`
+	Latitude  float64 `bson:"latitude"`
+}
+
+type loc struct {
+	Type        string `bson:"type"`
+	Coordinates coords `bson:"coordinates"`
+}
+
 type cinema struct {
-	ID          string    `bson:"_id"`
-	Name        string    `bson:"name"`
-	Address     string    `bson:"address"`
-	City        string    `bson:"city"`
-	Timezone    string    `bson:"timezone"`
-	Metros      []string  `bson:"metros,omitempty"`
-	Coordinates []float64 `bson:"coordinates"`
+	ID       string   `bson:"_id"`
+	Name     string   `bson:"name"`
+	Address  string   `bson:"address"`
+	City     string   `bson:"city"`
+	Timezone string   `bson:"timezone"`
+	Metros   []string `bson:"metros,omitempty"`
+	Location loc      `bson:"location"`
 }
 
 type cinemaAgg struct {
@@ -52,9 +62,12 @@ func (c cinemaAgg) Aggregate() error {
 			City:     city["id"].(string),
 			Timezone: city["timezone"].(string),
 			Metros:   extractMetros(raw["metro"]),
-			Coordinates: []float64{
-				coordinates["longitude"].(float64),
-				coordinates["latitude"].(float64),
+			Location: loc{
+				Type: "Point",
+				Coordinates: coords{
+					Longitude: coordinates["longitude"].(float64),
+					Latitude:  coordinates["latitude"].(float64),
+				},
 			},
 		}
 	}
