@@ -53,6 +53,6 @@ type CinemaWithSessions struct {
 // MoviesRepo work with movies collection
 type MoviesRepo interface {
 	Get(movID string) (*Movie, error)
-	FindByRating(cityID string, pag P) ([]*Movie, error)
-	GetSchedule(movieID, cityID string, pag P) ([]CinemaWithSessions, error)
+	FindByRating(city string, pag P) ([]*Movie, error)
+	GetSchedule(movieID, city string, pag P) ([]CinemaWithSessions, error)
 }

@@ -19,31 +19,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type movie struct {
-	ID            string `bson:"_id"`
-	KpId          string `bson:"kp_id"`
-	Title         string `bson:"title"`
-	TitleOriginal string `bson:"title_original,omitempty"`
-	Rating        struct {
-		KP   float64 `bson:"kp,omitempty"`
-		IMDb float64 `bson:"imdb,omitempty"`
-	} `bson:"rating,omitempty"`
-	AgeRestriction string              `bson:"age_restriction,omitempty"`
-	Duration       int                 `bson:"duration,omitempty"`
-	Description    string              `bson:"description"`
-	Staff          map[string][]string `bson:"staff"`
-	LandscapeImg   string              `bson:"landscape_img"`
-	Trailer        struct {
-		Name string `bson:"name,omitempty"`
-		Url  string `bson:"url,omitempty"`
-	} `bson:"trailer,omitempty"`
-	DateReleased time.Time `bson:"date_released,omitempty"`
-}
-
 type schedule struct {
+	City         string     `bson:"city"`
 	CinemaId     string     `bson:"cinema_id"`
 	MovieId      string     `bson:"movie_id"`
-	LastShowtime time.Time  `bson:"last_showtime"`
+	LastShowtime time.Time  `bson:"last"`
 	Showtimes    []showtime `bson:"showtimes"`
 }
 
@@ -51,6 +31,31 @@ type showtime struct {
 	ID    string    `bson:"_id"`
 	Time  time.Time `bson:"time"`
 	Price int       `bson:"price"`
+}
+
+type movie struct {
+	ID             string              `bson:"_id"`
+	KpId           string              `bson:"kp_id"`
+	Title          string              `bson:"title"`
+	TitleOriginal  string              `bson:"title_original,omitempty"`
+	Rating         rating              `bson:"rating,omitempty"`
+	AgeRestriction string              `bson:"age_restriction,omitempty"`
+	Duration       int                 `bson:"duration,omitempty"`
+	Description    string              `bson:"description"`
+	Staff          map[string][]string `bson:"staff"`
+	LandscapeImg   string              `bson:"landscape_img"`
+	Trailer        trailer             `bson:"trailer,omitempty"`
+	DateReleased   time.Time           `bson:"date_released,omitempty"`
+}
+
+type rating struct {
+	KP   float64 `bson:"kp,omitempty"`
+	IMDb float64 `bson:"imdb,omitempty"`
+}
+
+type trailer struct {
+	Name string `bson:"name,omitempty"`
+	Url  string `bson:"url,omitempty"`
 }
 
 type scheduleAgg struct {
@@ -212,6 +217,7 @@ func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 
 		if len(showtimes) > 0 {
 			sa.schedules = append(sa.schedules, schedule{
+				City:         "saint-petersburg",
 				CinemaId:     cinemaId,
 				MovieId:      movie.ID,
 				LastShowtime: showtimes[len(showtimes)-1].Time,

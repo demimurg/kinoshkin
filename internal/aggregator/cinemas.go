@@ -9,21 +9,11 @@ import (
 	"net/http"
 )
 
-type coords struct {
-	Longitude float64 `bson:"longitude"`
-	Latitude  float64 `bson:"latitude"`
-}
-
-type loc struct {
-	Type        string `bson:"type"`
-	Coordinates coords `bson:"coordinates"`
-}
-
 type cinema struct {
 	ID          string    `bson:"_id"`
 	Name        string    `bson:"name"`
 	Address     string    `bson:"address"`
-	CityID      string    `bson:"city_id"`
+	City        string    `bson:"city"`
 	Timezone    string    `bson:"timezone"`
 	Metros      []string  `bson:"metros,omitempty"`
 	Coordinates []float64 `bson:"coordinates"`
@@ -59,7 +49,7 @@ func (c cinemaAgg) Aggregate() error {
 			ID:       raw["id"].(string),
 			Name:     raw["title"].(string),
 			Address:  raw["address"].(string),
-			CityID:   city["id"].(string),
+			City:     city["id"].(string),
 			Timezone: city["timezone"].(string),
 			Metros:   extractMetros(raw["metro"]),
 			Coordinates: []float64{
