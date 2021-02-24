@@ -23,7 +23,7 @@ func (c conf) FindCinemas(userID int, pag domain.P) ([]*domain.Cinema, error) {
 		return nil, err
 	}
 
-	return c.cinemas.FindNearby(user.Lat, user.Long, pag)
+	return c.cinemas.FindNearby(user, pag)
 }
 
 func (c conf) GetMovie(movieID string) (*domain.Movie, error) {
@@ -36,7 +36,7 @@ func (c conf) GetMovieSchedule(userID int, movieID string, pag domain.P) ([]doma
 		return nil, err
 	}
 
-	return c.movies.GetSchedule(movieID, user.City, pag)
+	return c.movies.GetSchedule(movieID, user, pag)
 }
 
 func (c conf) GetCinema(cinemaID string) (*domain.Cinema, error) {

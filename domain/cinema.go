@@ -29,6 +29,6 @@ type MovieWithSessions struct {
 type CinemasRepo interface {
 	Get(cinemaID string) (*Cinema, error)
 	// FindNearby search cinemas near user location
-	FindNearby(lat, long float32, pag P) ([]*Cinema, error)
+	FindNearby(user *User, pag P) ([]*Cinema, error)
 	GetSchedule(cinemaID string, pag P) ([]MovieWithSessions, error)
 }
