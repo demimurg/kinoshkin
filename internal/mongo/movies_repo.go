@@ -182,15 +182,19 @@ func convertToDomainCinema(dbCinema bson.M) *domain.Cinema {
 	cin.Address, _ = dbCinema["address"].(string)
 	cin.Distance, _ = dbCinema["dist"].(int)
 	cin.Metro, _ = dbCinema["metros"].([]string)
-
-	location, ok := dbCinema["location"].(map[string]interface{})
-	if ok {
-		coordinates, _ := location["coordinates"].(map[string]float32)
-		cin.Long, _ = coordinates["longitude"]
-		cin.Lat, _ = coordinates["latitude"]
-	}
+	cin.Long, cin.Lat = extractLocation(dbCinema)
 
 	return &cin
+}
+
+func extractLocation(doc bson.M) (long, lat float32) {
+	location, ok := doc["location"].(map[string]interface{})
+	if ok {
+		coordinates, _ := location["coordinates"].(map[string]float32)
+		long, _ = coordinates["longitude"]
+		lat, _ = coordinates["latitude"]
+	}
+	return
 }
 
 func convertToDomainMovie(dbMov bson.M) *domain.Movie {

@@ -1,6 +1,6 @@
 module kinoshkin
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Jeffail/gabs/v2 v2.6.0
