@@ -163,16 +163,30 @@ func (m moviesRepo) GetSchedule(movieID string, user *domain.User, pag domain.P)
 
 		cinemasList = append(cinemasList, domain.CinemaWithSessions{
 			Cinema:   convertToDomainCinema(dbCinema),
-			Sessions: extractSessions(dbCinema),
+			Sessions: extractSessions(dbCinema["schedule"]),
 		})
 	}
 
 	return cinemasList, nil
 }
 
-func extractSessions(doc bson.M) []domain.Session {
+func extractSessions(showtimesB interface{}) []domain.Session {
+	showtimes, ok := showtimesB.([]map[string]interface{})
+	if !ok {
+		return nil
+	}
 
-	return nil
+	var sessions []domain.Session
+	for _, show := range showtimes {
+		var ses domain.Session
+		ses.ID, _ = show["_id"].(string)
+		ses.Start, _ = show["time"].(time.Time)
+		ses.Price, _ = show["price"].(int)
+
+		sessions = append(sessions, ses)
+	}
+
+	return sessions
 }
 
 func convertToDomainCinema(dbCinema bson.M) *domain.Cinema {
@@ -180,7 +194,7 @@ func convertToDomainCinema(dbCinema bson.M) *domain.Cinema {
 	cin.ID, _ = dbCinema["_id"].(string)
 	cin.Name, _ = dbCinema["name"].(string)
 	cin.Address, _ = dbCinema["address"].(string)
-	cin.Distance, _ = dbCinema["dist"].(int)
+	cin.Distance, _ = dbCinema["distance"].(int)
 	cin.Metro, _ = dbCinema["metros"].([]string)
 	cin.Long, cin.Lat = extractLocation(dbCinema)
 
