@@ -1,4 +1,4 @@
-package mongo
+package mongodb
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func NewCinemasRepository(client mongo.Client) domain.CinemasRepo {
-	return cinemasRepo{client.Database("kinoshkin")}
+func NewCinemasRepository(db *mongo.Database) domain.CinemasRepository {
+	return cinemasRepo{db}
 }
 
 type cinemasRepo struct {

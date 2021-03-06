@@ -1,10 +1,14 @@
-package mongo
+package mongodb
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"kinoshkin/domain"
 )
+
+func NewUsersRepository(db *mongo.Database) domain.UsersRepository {
+	return usersRepo{db}
+}
 
 type usersRepo struct {
 	db *mongo.Database

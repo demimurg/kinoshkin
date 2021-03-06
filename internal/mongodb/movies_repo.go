@@ -1,4 +1,4 @@
-package mongo
+package mongodb
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func NewMoviesRepository(client mongo.Client) domain.MoviesRepo {
-	return moviesRepo{client.Database("kinoshkin")}
+func NewMoviesRepository(db *mongo.Database) domain.MoviesRepository {
+	return moviesRepo{db}
 }
 
 type moviesRepo struct {
