@@ -100,11 +100,10 @@ func genMockSessions() []domain.Session {
 
 var mockMovies = []*domain.Movie{
 	{
-		ID:             "58972c13682d1a7c201f95b7c",
-		Title:          "Патерсон",
-		PosterURL:      "https://avatars.mds.yandex.net/get-afishanew/29022/9c53aecc9c3491cd698ff36bdfb6273d/s744x446",
-		Duration:       118,
-		AgeRestriction: true,
+		ID:        "58972c13682d1a7c201f95b7c",
+		Title:     "Патерсон",
+		PosterURL: "https://avatars.mds.yandex.net/get-afishanew/29022/9c53aecc9c3491cd698ff36bdfb6273d/s744x446",
+		Duration:  118,
 		FilmCrew: map[domain.Position]domain.Persons{
 			domain.Director: {"Джим Джармуш"},
 			domain.Actor:    {"Адам Драйвер", "Голшифте Фарахани"},
