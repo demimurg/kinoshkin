@@ -12,6 +12,8 @@ type BotServer interface {
 	Start()
 }
 
+var limit = domain.P{Limit: 6}
+
 // New initialize handlers
 func New(svc domain.Conferencier) BotServer {
 	b, err := tb.NewBot(tb.Settings{
@@ -49,11 +51,11 @@ func New(svc domain.Conferencier) BotServer {
 
 		switch m.Text {
 		case views.CinemasCmd.Text:
-			cinemas, _ := svc.FindCinemas(m.Sender.ID, domain.P{Limit: 6})
+			cinemas, _ := svc.FindCinemas(m.Sender.ID, limit)
 			msg = "cinemas"
 			buttons = views.CinemasList(cinemas)
 		case views.MoviesCmd.Text:
-			movies, _ := svc.FindMovies(m.Sender.ID, domain.P{Limit: 6})
+			movies, _ := svc.FindMovies(m.Sender.ID, limit)
 			msg = "movies"
 			buttons = views.MoviesList(movies)
 		default:
@@ -80,10 +82,10 @@ func New(svc domain.Conferencier) BotServer {
 			msg, opts = views.MovieCard(movie)
 		case views.CinemaPrefix:
 			cinema, _ := svc.GetCinema(id)
-			schedule, _ := svc.GetCinemaSchedule(id)
+			schedule, _ := svc.GetCinemaSchedule(id, limit)
 			msg, opts = views.CinemaCard(cinema, schedule)
 		case views.MovieSchedulePrefix:
-			schedule, _ := svc.GetMovieSchedule(cb.Sender.ID, id)
+			schedule, _ := svc.GetMovieSchedule(cb.Sender.ID, id, limit)
 			msg, opts = views.MovieScheduleTable(schedule)
 		default:
 			return
