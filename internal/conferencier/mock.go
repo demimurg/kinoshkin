@@ -35,7 +35,7 @@ func (m Mock) GetMovie(movieID string) (*domain.Movie, error) {
 	return nil, nil
 }
 
-func (m Mock) GetMovieSchedule(userID int, movieID string) ([]domain.CinemaWithSessions, error) {
+func (m Mock) GetMovieSchedule(userID int, movieID string, pag domain.P) ([]domain.CinemaWithSessions, error) {
 	var schedule []domain.CinemaWithSessions
 	for _, cin := range mockCinemas {
 		schedule = append(schedule, domain.CinemaWithSessions{
@@ -58,7 +58,7 @@ func (m Mock) GetCinema(cinemaID string) (*domain.Cinema, error) {
 	return nil, nil
 }
 
-func (m Mock) GetCinemaSchedule(cinemaID string) ([]domain.MovieWithSessions, error) {
+func (m Mock) GetCinemaSchedule(cinemaID string, pag domain.P) ([]domain.MovieWithSessions, error) {
 	var schedule []domain.MovieWithSessions
 	for _, mov := range mockMovies {
 		schedule = append(schedule, domain.MovieWithSessions{
