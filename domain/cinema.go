@@ -25,8 +25,8 @@ type MovieWithSessions struct {
 	Sessions []Session
 }
 
-// CinemasRepo provides basic db methods for cinemas collection
-type CinemasRepo interface {
+// CinemasRepository provides basic db methods for cinemas collection
+type CinemasRepository interface {
 	Get(cinemaID string) (*Cinema, error)
 	// FindNearby search cinemas near user location
 	FindNearby(user *User, pag P) ([]*Cinema, error)

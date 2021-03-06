@@ -50,8 +50,8 @@ type CinemaWithSessions struct {
 	Sessions []Session
 }
 
-// MoviesRepo work with movies collection
-type MoviesRepo interface {
+// MoviesRepository work with movies collection
+type MoviesRepository interface {
 	Get(movID string) (*Movie, error)
 	FindByRating(city string, pag P) ([]*Movie, error)
 	GetSchedule(movieID string, user *User, pag P) ([]CinemaWithSessions, error)
