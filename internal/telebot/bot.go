@@ -1,10 +1,11 @@
 package telebot
 
 import (
+	"github.com/pkg/errors"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"kinoshkin/domain"
 	"kinoshkin/internal/telebot/views"
-	"log"
+	logger "log"
 	"strings"
 )
 
@@ -14,6 +15,15 @@ type BotServer interface {
 
 var limit = domain.P{Limit: 6}
 
+func log(err error, msg ...string) bool {
+	if err != nil {
+		err = errors.Wrap(err, strings.Join(msg, ""))
+		logger.Print(err)
+		return true
+	}
+	return false
+}
+
 // New initialize handlers
 func New(svc domain.Conferencier) BotServer {
 	b, err := tb.NewBot(tb.Settings{
@@ -21,26 +31,24 @@ func New(svc domain.Conferencier) BotServer {
 		Verbose: cfg.LogTrace,
 		Poller:  &tb.LongPoller{Timeout: cfg.UpdateInterval},
 	})
-	if err != nil {
-		log.Fatal("Bot initialization error: ", err)
-	}
+	log(err, "Bot initialization error")
 
 	b.Handle("/start", func(m *tb.Message) {
-		errR := svc.RegisterUser(
+		err := svc.RegisterUser(
 			m.Sender.ID, strings.Join([]string{
 				m.Sender.FirstName, m.Sender.LastName,
 			}, " "),
 		)
-		_, errS := b.Send(m.Sender, "Hello my friend!", &tb.ReplyMarkup{
+		log(err, "User registration")
+
+		_, err = b.Send(m.Sender, "Категорически приветствую!", &tb.ReplyMarkup{
 			ReplyKeyboard: [][]tb.ReplyButton{
 				{views.CinemasCmd, views.MoviesCmd},
 				{views.LocationCmd},
 			},
 			ResizeReplyKeyboard: true,
 		})
-		if errR != nil || errS != nil {
-			log.Print(errR, errS)
-		}
+		log(err)
 	})
 
 	b.Handle(tb.OnText, func(m *tb.Message) {
@@ -51,11 +59,13 @@ func New(svc domain.Conferencier) BotServer {
 
 		switch m.Text {
 		case views.CinemasCmd.Text:
-			cinemas, _ := svc.FindCinemas(m.Sender.ID, limit)
+			cinemas, err := svc.FindCinemas(m.Sender.ID, limit)
+			log(err, "Find cinemas")
 			msg = "cinemas"
 			buttons = views.CinemasList(cinemas)
 		case views.MoviesCmd.Text:
-			movies, _ := svc.FindMovies(m.Sender.ID, limit)
+			movies, err := svc.FindMovies(m.Sender.ID, limit)
+			log(err, "Find movies")
 			msg = "movies"
 			buttons = views.MoviesList(movies)
 		default:
@@ -65,9 +75,7 @@ func New(svc domain.Conferencier) BotServer {
 		_, err := b.Send(m.Sender, msg, tb.ModeMarkdownV2, &tb.ReplyMarkup{
 			InlineKeyboard: buttons,
 		})
-		if err != nil {
-			log.Print(err)
-		}
+		log(err)
 	})
 
 	b.Handle(tb.OnCallback, func(cb *tb.Callback) {
@@ -78,30 +86,36 @@ func New(svc domain.Conferencier) BotServer {
 
 		switch prefix, id := views.Decode(cb.Data); prefix {
 		case views.MoviePrefix:
-			movie, _ := svc.GetMovie(id)
+			movie, err := svc.GetMovie(id)
+			log(err, "Get movie ", id)
 			msg, opts = views.MovieCard(movie)
 		case views.CinemaPrefix:
-			cinema, _ := svc.GetCinema(id)
-			schedule, _ := svc.GetCinemaSchedule(id, limit)
+			cinema, err := svc.GetCinema(id)
+			log(err, "Get cinema ", id)
+
+			schedule, err := svc.GetCinemaSchedule(id, limit)
+			log(err, "Get cinema schedule")
+
 			msg, opts = views.CinemaCard(cinema, schedule)
 		case views.MovieSchedulePrefix:
-			schedule, _ := svc.GetMovieSchedule(cb.Sender.ID, id, limit)
+			schedule, err := svc.GetMovieSchedule(cb.Sender.ID, id, limit)
+			log(err, "Get movie schedule")
+
 			msg, opts = views.MovieScheduleTable(schedule)
 		default:
 			return
 		}
 
 		_, err := b.Send(cb.Sender, msg, opts...)
-		if err != nil {
-			log.Print(err)
-		}
+		log(err)
 	})
 
 	b.Handle(tb.OnLocation, func(m *tb.Message) {
 		err := svc.UpdateUserLocation(m.Sender.ID, m.Location.Lat, m.Location.Lng)
-		if err != nil {
-			log.Print(err)
-		}
+		log(err, "Update user location")
+
+		_, err = b.Send(m.Sender, "Местоположение обновлено")
+		log(err)
 	})
 
 	return b
