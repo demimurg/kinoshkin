@@ -52,6 +52,11 @@ func (m moviesRepo) FindByRating(city string, pag domain.P) ([]*domain.Movie, er
 			"as":           "movies",
 		}},
 	}
+	throwAwayEmpty := bson.D{
+		{"$match", bson.M{
+			"movies": bson.M{"$not": bson.M{"$size": 0}},
+		}},
+	}
 	extractMovieData := bson.D{
 		{"$replaceRoot", bson.M{
 			"newRoot": bson.M{
@@ -74,6 +79,7 @@ func (m moviesRepo) FindByRating(city string, pag domain.P) ([]*domain.Movie, er
 		getFutureSessions,
 		groupByMovieID,
 		joinWithMovies,
+		throwAwayEmpty,
 		extractMovieData,
 		sortByRating,
 		limit,
