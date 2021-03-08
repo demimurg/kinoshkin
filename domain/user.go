@@ -3,7 +3,7 @@ package domain
 type User struct {
 	ID        int
 	Name      string
-	Lat, Long float32
+	Lat, Long float64
 	City      string
 }
 

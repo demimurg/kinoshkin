@@ -17,7 +17,7 @@ type cinemasRepo struct {
 
 func (c cinemasRepo) Get(cinemaID string) (*domain.Cinema, error) {
 	cinemas := c.db.Collection("cinemas")
-
+	// todo: add distance information ($geoNear)
 	var cinema bson.M
 	err := cinemas.FindOne(ctx, bson.M{"_id": cinemaID}).Decode(&cinema)
 	if err != nil {
@@ -31,7 +31,7 @@ func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]*domain.Cine
 		{"$geoNear", bson.M{
 			"near": bson.M{
 				"type":        "Point",
-				"coordinates": []float32{user.Long, user.Lat},
+				"coordinates": []float64{user.Long, user.Lat},
 			},
 			"maxDistance":   20000, // in meters
 			"distanceField": "distance",

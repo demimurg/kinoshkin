@@ -52,6 +52,7 @@ func (u usersRepo) UpdateLoc(id int, lat, long float32) error {
 func (u usersRepo) Create(id int, name string) error {
 	users := u.db.Collection("users")
 
+	// todo: handle duplicate key error
 	_, err := users.InsertOne(ctx, bson.M{
 		"_id":  id,
 		"name": name,

@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"kinoshkin/domain"
 	"time"
@@ -106,7 +107,7 @@ func (m moviesRepo) GetSchedule(movieID string, user *domain.User, pag domain.P)
 		{"$geoNear", bson.M{
 			"near": bson.M{
 				"type":        "Point",
-				"coordinates": []float32{user.Long, user.Lat},
+				"coordinates": []float64{user.Long, user.Lat},
 			},
 			"distanceField": "distance",
 			"query": bson.M{
@@ -177,17 +178,26 @@ func (m moviesRepo) GetSchedule(movieID string, user *domain.User, pag domain.P)
 }
 
 func extractSessions(showtimesB interface{}) []domain.Session {
-	showtimes, ok := showtimesB.([]map[string]interface{})
+	showtimes, ok := showtimesB.(bson.A)
 	if !ok {
 		return nil
 	}
 
 	var sessions []domain.Session
-	for _, show := range showtimes {
+	for _, showI := range showtimes {
+		show, ok := showI.(bson.M)
+		if !ok {
+			continue
+		}
+
 		var ses domain.Session
 		ses.ID, _ = show["_id"].(string)
-		ses.Start, _ = show["time"].(time.Time)
-		ses.Price, _ = show["price"].(int)
+		ses.Price, _ = show["price"].(int32)
+
+		bsonDate, ok := show["time"].(primitive.DateTime)
+		if ok {
+			ses.Start = bsonDate.Time()
+		}
 
 		sessions = append(sessions, ses)
 	}
@@ -200,20 +210,24 @@ func convertToDomainCinema(dbCinema bson.M) *domain.Cinema {
 	cin.ID, _ = dbCinema["_id"].(string)
 	cin.Name, _ = dbCinema["name"].(string)
 	cin.Address, _ = dbCinema["address"].(string)
-	cin.Distance, _ = dbCinema["distance"].(int)
+	dist, ok := dbCinema["distance"].(float64)
+	if ok {
+		cin.Distance = int(dist)
+	}
 	cin.Metro, _ = dbCinema["metros"].([]string)
 	cin.Long, cin.Lat = extractLocation(dbCinema)
 
 	return &cin
 }
 
-func extractLocation(doc bson.M) (long, lat float32) {
-	location, ok := doc["location"].(map[string]interface{})
+func extractLocation(doc bson.M) (long, lat float64) {
+	location, ok := doc["location"].(bson.M)
 	if ok {
-		coordinates, _ := location["coordinates"].(map[string]float32)
-		long, _ = coordinates["longitude"]
-		lat, _ = coordinates["latitude"]
+		coordinates, _ := location["coordinates"].(bson.M)
+		long, _ = coordinates["longitude"].(float64)
+		lat, _ = coordinates["latitude"].(float64)
 	}
+
 	return
 }
 
@@ -221,21 +235,34 @@ func convertToDomainMovie(dbMov bson.M) *domain.Movie {
 	var mov domain.Movie
 	mov.ID, _ = dbMov["_id"].(string)
 	mov.Title, _ = dbMov["title"].(string)
-	mov.Duration, _ = dbMov["duration"].(int)
+	mov.Duration, _ = dbMov["duration"].(int32)
 	mov.Description, _ = dbMov["description"].(string)
 	mov.PosterURL, _ = dbMov["landscape_img"].(string)
 	mov.AgeRestriction, _ = dbMov["age_restriction"].(string)
 
-	kpRating, _ := dbMov["rating_kp"].(float64)
-	imdbRating, _ := dbMov["rating_imdb"].(float64)
-	mov.Rating.KP = float32(kpRating)
-	mov.Rating.IMDB = float32(imdbRating)
+	rating, ok := dbMov["rating"].(bson.M)
+	if ok {
+		mov.Rating.KP, _ = rating["kp"].(float64)
+		mov.Rating.IMDB, _ = dbMov["imdb"].(float64)
+
+	}
 
 	mov.FilmCrew = make(map[domain.Position]domain.Persons)
-	staff, ok := dbMov["staff"].(map[string]interface{})
+	staff, ok := dbMov["staff"].(bson.M)
 	if ok {
 		for role, personsI := range staff {
-			persons, _ := personsI.([]string)
+			personsI, ok := personsI.(bson.A)
+			if !ok {
+				continue
+			}
+
+			var persons []string
+			for _, personI := range personsI {
+				if p, ok := personI.(string); ok {
+					persons = append(persons, p)
+				}
+			}
+
 			switch role {
 			case "actor":
 				mov.FilmCrew[domain.Actor] = persons

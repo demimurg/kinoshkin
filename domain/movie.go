@@ -19,14 +19,14 @@ type Persons []string
 
 // Rating for the most popular aggregators
 type Rating struct {
-	IMDB, KP float32
+	IMDB, KP float64
 }
 
 // Genre is a genre of the concrete movie
 type Genre uint
 
 const (
-	Comedy Genre = iota
+	Comedy Genre = iota + 1
 	Horror
 	Action
 )
@@ -38,7 +38,7 @@ type Movie struct {
 	Description    string
 	PosterURL      string
 	Genre          Genre
-	Duration       int
+	Duration       int32
 	AgeRestriction string
 	FilmCrew       map[Position]Persons
 	Rating         Rating

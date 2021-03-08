@@ -87,7 +87,7 @@ func CinemaCard(cinema *domain.Cinema, schedule []domain.MovieWithSessions) (msg
 	}
 
 	return &tb.Venue{
-			Location:     tb.Location{Lat: cinema.Lat, Lng: cinema.Long},
+			Location:     tb.Location{Lat: float32(cinema.Lat), Lng: float32(cinema.Long)},
 			Title:        fmt.Sprintf("%s ~ %.2fкм", cinema.Name, float32(cinema.Distance)/1000),
 			Address:      address,
 			FoursquareID: "4bf58dd8d48988d17f941735",
@@ -120,6 +120,7 @@ func renderSessions(sess []domain.Session) [][]tb.InlineButton {
 	)
 	for i, ses := range sess {
 		row = append(row, tb.InlineButton{
+			URL:  "https://widget.afisha.yandex.ru/w/sessions/" + ses.ID,
 			Text: ses.Start.Format("15:04") + fmt.Sprintf(" %dр", ses.Price),
 		})
 		if i%2 != 0 {

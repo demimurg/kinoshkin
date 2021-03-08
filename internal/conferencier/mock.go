@@ -88,7 +88,7 @@ func genMockSessions() []domain.Session {
 				eveningTime.Truncate(7*time.Hour),
 				eveningTime,
 			),
-			Price: faker.RandomInt(100, 500),
+			Price: int32(faker.RandomInt(100, 500)),
 		})
 	}
 	sort.Slice(sessions, func(i, j int) bool {

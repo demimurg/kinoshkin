@@ -8,7 +8,7 @@ type Cinema struct {
 	Name      string
 	Address   string
 	Metro     []string
-	Lat, Long float32
+	Lat, Long float64
 	Distance  int
 }
 
@@ -16,7 +16,7 @@ type Cinema struct {
 type Session struct {
 	ID    string
 	Start time.Time
-	Price int
+	Price int32
 }
 
 // MovieWithSessions is a schedule for some movie in certain cinema
