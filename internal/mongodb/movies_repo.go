@@ -214,7 +214,13 @@ func convertToDomainCinema(dbCinema bson.M) *domain.Cinema {
 	if ok {
 		cin.Distance = int(dist)
 	}
-	cin.Metro, _ = dbCinema["metros"].([]string)
+	metros, _ := dbCinema["metros"].(bson.A)
+	for _, m := range metros {
+		metro, ok := m.(string)
+		if ok {
+			cin.Metro = append(cin.Metro, metro)
+		}
+	}
 	cin.Long, cin.Lat = extractLocation(dbCinema)
 
 	return &cin
@@ -243,7 +249,7 @@ func convertToDomainMovie(dbMov bson.M) *domain.Movie {
 	rating, ok := dbMov["rating"].(bson.M)
 	if ok {
 		mov.Rating.KP, _ = rating["kp"].(float64)
-		mov.Rating.IMDB, _ = dbMov["imdb"].(float64)
+		mov.Rating.IMDB, _ = rating["imdb"].(float64)
 
 	}
 
