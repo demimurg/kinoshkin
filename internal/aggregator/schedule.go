@@ -275,8 +275,10 @@ func (sa *scheduleAgg) extendMovies() error {
 			}
 
 			key := strings.ToLower(empKey)
-			empName, _ := employee.S("nameRu").Data().(string)
-			movie.Staff[key] = append(movie.Staff[key], empName)
+			empName, ok := employee.S("nameRu").Data().(string)
+			if ok {
+				movie.Staff[key] = append(movie.Staff[key], empName)
+			}
 		}
 
 		duration, ok := movData.S("data", "filmLength").Data().(string)
