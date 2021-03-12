@@ -253,7 +253,7 @@ func convertToDomainMovie(dbMov bson.M) *domain.Movie {
 
 	}
 
-	mov.FilmCrew = make(map[domain.Position]domain.Persons)
+	mov.FilmCrew = make(map[domain.Position][]string)
 	staff, ok := dbMov["staff"].(bson.M)
 	if ok {
 		for role, personsI := range staff {

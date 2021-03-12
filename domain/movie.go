@@ -14,9 +14,6 @@ const (
 	Operator
 )
 
-// Persons is a people working on one position
-type Persons []string
-
 // Rating for the most popular aggregators
 type Rating struct {
 	IMDB, KP float64
@@ -40,7 +37,7 @@ type Movie struct {
 	Genre          Genre
 	Duration       int32
 	AgeRestriction string
-	FilmCrew       map[Position]Persons
+	FilmCrew       map[Position][]string
 	Rating         Rating
 }
 

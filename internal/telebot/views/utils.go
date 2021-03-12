@@ -19,3 +19,24 @@ LOOP:
 
 	return escaped
 }
+
+func merge(x []string, y []string) (result []string) {
+	copy(x, result)
+
+	for _, elemY := range y {
+		for _, elemX := range x {
+			if elemX == elemY {
+				continue
+			}
+		}
+		result = append(result, elemY)
+	}
+	return result
+}
+
+func limit(slice []string, n int) []string {
+	if n >= len(slice) {
+		return slice
+	}
+	return slice[:n]
+}

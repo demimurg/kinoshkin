@@ -230,7 +230,6 @@ func (sa *scheduleAgg) aggregateSchedule(cinemaId string) error {
 }
 
 func getScheduleJSON(cinemaId string) ([]byte, error) {
-	// todo: remove add 24 * time.Hour (debug only)
 	resp, err := http.Get(fmt.Sprintf(
 		cfg.ScheduleURL+"/%s/schedule_cinema?date=%s&city=saint-petersburg&limit=200",
 		cinemaId, time.Now().Format("2006-01-02"),

@@ -104,7 +104,7 @@ var mockMovies = []*domain.Movie{
 		Title:     "Патерсон",
 		PosterURL: "https://avatars.mds.yandex.net/get-afishanew/29022/9c53aecc9c3491cd698ff36bdfb6273d/s744x446",
 		Duration:  118,
-		FilmCrew: map[domain.Position]domain.Persons{
+		FilmCrew: map[domain.Position][]string{
 			domain.Director: {"Джим Джармуш"},
 			domain.Actor:    {"Адам Драйвер", "Голшифте Фарахани"},
 		},
@@ -116,7 +116,7 @@ var mockMovies = []*domain.Movie{
 		Title:     "Непосредственно Каха!",
 		PosterURL: "https://avatars.mds.yandex.net/get-afishanew/36842/a3f951b2fd0dbf9b414abdf07f6d752c/s744x446",
 		Duration:  110,
-		FilmCrew: map[domain.Position]domain.Persons{
+		FilmCrew: map[domain.Position][]string{
 			domain.Director: {"Виктор Шамиров"},
 			domain.Actor:    {"Артем Калайджян", "Артем Карокозян"},
 		},
@@ -128,7 +128,7 @@ var mockMovies = []*domain.Movie{
 		Title:     "Обратная связь",
 		PosterURL: "https://avatars.mds.yandex.net/get-afishanew/21422/376997cbc9ebba604e8ac336544246b1/s744x446",
 		Duration:  97,
-		FilmCrew: map[domain.Position]domain.Persons{
+		FilmCrew: map[domain.Position][]string{
 			domain.Director: {"Алексей Нужный"},
 			domain.Actor:    {"Ростислав Хаит", "Мария Миронова"},
 		},
@@ -140,7 +140,7 @@ var mockMovies = []*domain.Movie{
 		Title:     "Семейка Крудс: Новоселье",
 		PosterURL: "https://avatars.mds.yandex.net/get-afishanew/23222/1a9348c9850df2484be152024d6ed70d/s744x446",
 		Duration:  95,
-		FilmCrew: map[domain.Position]domain.Persons{
+		FilmCrew: map[domain.Position][]string{
 			domain.Director: {"Джоэль Кроуфорд"},
 			domain.Actor:    {"Райан Рейнольдс", "Эмма Стоун"},
 		},

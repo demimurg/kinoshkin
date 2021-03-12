@@ -45,25 +45,31 @@ func CinemasList(cinemas []*domain.Cinema) [][]tb.InlineButton {
 func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
 	title := fmt.Sprintf("*%s*", mov.Title)
 	duration := fmt.Sprintf("Продолжительность: `%d мин`", mov.Duration)
-	// todo: remove duplicates
-	creators := "Создатели: `" + strings.Join(append(
+
+	creatorsList := limit(merge(
 		mov.FilmCrew[domain.Director],
-		mov.FilmCrew[domain.Screenwriter]...,
-	), ", ") + "`"
-	actors := fmt.Sprintf("Актеры: `%s`", strings.Join(mov.FilmCrew[domain.Actor], ", "))
+		mov.FilmCrew[domain.Screenwriter],
+	), 2)
+	creators := "Создатели: `" + strings.Join(creatorsList, ", ") + "`"
+
+	actorsList := limit(mov.FilmCrew[domain.Actor], 4)
+	actors := fmt.Sprintf("Актеры: `%s`", strings.Join(actorsList, ", "))
 	description := "_" + mov.Description + "_"
 
 	var rating []string
 	if mov.Rating.KP != 0 {
-		kp := fmt.Sprintf("`КиноПоиск: %.1f`", mov.Rating.KP)
+		kp := fmt.Sprintf("КиноПоиск: *%.1f*", mov.Rating.KP)
 		rating = append(rating, kp)
 	}
 	if mov.Rating.IMDB != 0 {
-		imdb := fmt.Sprintf("`IMDb: %.1f`", mov.Rating.IMDB)
+		imdb := fmt.Sprintf("IMDb: *%.1f*", mov.Rating.IMDB)
 		rating = append(rating, imdb)
 	}
 
-	caption := []string{title, duration, creators, actors, description, strings.Join(rating, " | ")}
+	caption := []string{
+		title, strings.Join(rating, " | "),
+		duration, creators, actors, description,
+	}
 
 	return &tb.Photo{
 			File:    tb.File{FileURL: mov.PosterURL},
