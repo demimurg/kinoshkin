@@ -21,14 +21,15 @@ type Session struct {
 
 // MovieWithSessions is a schedule for some movie in certain cinema
 type MovieWithSessions struct {
-	*Movie
+	Movie
 	Sessions []Session
 }
 
 // CinemasRepository provides basic db methods for cinemas collection
 type CinemasRepository interface {
+	Create(cinemas []Cinema) error
 	Get(cinemaID string) (*Cinema, error)
 	// FindNearby search cinemas near user location
-	FindNearby(user *User, pag P) ([]*Cinema, error)
+	FindNearby(user *User, pag P) ([]Cinema, error)
 	GetSchedule(cinemaID string, pag P) ([]MovieWithSessions, error)
 }

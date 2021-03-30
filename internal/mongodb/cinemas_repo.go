@@ -15,18 +15,29 @@ type cinemasRepo struct {
 	db *mongo.Database
 }
 
+func (c cinemasRepo) Create(cinemas []domain.Cinema) error {
+	mongoCinemas := make([]interface{}, len(cinemas))
+	for i := range cinemas {
+		mongoCinemas[i] = toMongoCinema(&cinemas[i])
+	}
+	_, err := c.db.Collection("cinemas").InsertMany(ctx, mongoCinemas)
+	return err
+}
+
+// todo: add distance information ($geoNear)
 func (c cinemasRepo) Get(cinemaID string) (*domain.Cinema, error) {
-	cinemas := c.db.Collection("cinemas")
-	// todo: add distance information ($geoNear)
-	var cinema bson.M
-	err := cinemas.FindOne(ctx, bson.M{"_id": cinemaID}).Decode(&cinema)
+	var cin Cinema
+	err := c.db.Collection("cinemas").
+		FindOne(ctx, bson.M{"_id": cinemaID}).Decode(&cin)
 	if err != nil {
 		return nil, err
 	}
-	return convertToDomainCinema(cinema), nil
+	domainCinema := toDomainCinema(&cin)
+
+	return &domainCinema, nil
 }
 
-func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]*domain.Cinema, error) {
+func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]domain.Cinema, error) {
 	geoNear := bson.D{
 		{"$geoNear", bson.M{
 			"near": bson.M{
@@ -44,8 +55,7 @@ func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]*domain.Cine
 		{"$limit", pag.Limit},
 	}
 
-	cinemas := c.db.Collection("cinemas")
-	docs, err := cinemas.Aggregate(ctx, mongo.Pipeline{
+	docs, err := c.db.Collection("cinemas").Aggregate(ctx, mongo.Pipeline{
 		geoNear,
 		limit,
 	})
@@ -54,17 +64,16 @@ func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]*domain.Cine
 	}
 	defer docs.Close(ctx)
 
-	var cinemasList []*domain.Cinema
+	var cinemas []domain.Cinema
 	for docs.Next(ctx) {
-		var dbCinema bson.M
-		if err := docs.Decode(&dbCinema); err != nil {
+		var mongoCinema Cinema
+		if err := docs.Decode(&mongoCinema); err != nil {
 			return nil, err
 		}
-
-		cinemasList = append(cinemasList, convertToDomainCinema(dbCinema))
+		cinemas = append(cinemas, toDomainCinema(&mongoCinema))
 	}
 
-	return cinemasList, nil
+	return cinemas, nil
 }
 
 func (c cinemasRepo) GetSchedule(cinemaID string, pag domain.P) ([]domain.MovieWithSessions, error) {
@@ -107,8 +116,7 @@ func (c cinemasRepo) GetSchedule(cinemaID string, pag domain.P) ([]domain.MovieW
 		}},
 	}
 
-	movies := c.db.Collection("movies")
-	docs, err := movies.Aggregate(ctx, mongo.Pipeline{
+	docs, err := c.db.Collection("movies").Aggregate(ctx, mongo.Pipeline{
 		joinScheduleToMovies,
 		throwAwayMoviesWithEmptySchedule,
 		sortByRating,
@@ -122,14 +130,14 @@ func (c cinemasRepo) GetSchedule(cinemaID string, pag domain.P) ([]domain.MovieW
 
 	var moviesList []domain.MovieWithSessions
 	for docs.Next(ctx) {
-		var dbMovie bson.M
-		if err := docs.Decode(&dbMovie); err != nil {
+		var cinSchedule cinemaSchedule
+		if err := docs.Decode(&cinSchedule); err != nil {
 			return nil, err
 		}
 
 		moviesList = append(moviesList, domain.MovieWithSessions{
-			Movie:    convertToDomainMovie(dbMovie),
-			Sessions: extractSessions(dbMovie["schedule"]),
+			Movie:    toDomainMovie(&cinSchedule.Movie),
+			Sessions: toSessions(cinSchedule.Schedule),
 		})
 	}
 

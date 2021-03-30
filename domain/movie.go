@@ -1,17 +1,17 @@
 package domain
 
 // Position in team
-type Position int
+type Position = string
 
 const (
 	// Director of movie
-	Director Position = iota
+	Director Position = "режиссер"
 	// Screenwriter - person who wrote movie script
-	Screenwriter
+	Screenwriter Position = "сценарист"
 	// Actor (Angelina Jolie, Leonardo DiCaprio, etc)
-	Actor
+	Actor Position = "актер"
 	// Operator the most underrated man
-	Operator
+	Operator Position = "оператор"
 )
 
 // Rating for the most popular aggregators
@@ -43,13 +43,14 @@ type Movie struct {
 
 // CinemaWithSessions is a schedule of the certain movie in some cinema
 type CinemaWithSessions struct {
-	*Cinema
+	Cinema
 	Sessions []Session
 }
 
 // MoviesRepository work with movies collection
 type MoviesRepository interface {
+	Create(movs []Movie) error
 	Get(movID string) (*Movie, error)
-	FindByRating(city string, pag P) ([]*Movie, error)
+	FindByRating(city string, pag P) ([]Movie, error)
 	GetSchedule(movieID string, user *User, pag P) ([]CinemaWithSessions, error)
 }

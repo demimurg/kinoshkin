@@ -1,9 +1,10 @@
 package mongodb
 
 import (
+	"kinoshkin/domain"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"kinoshkin/domain"
 )
 
 func NewUsersRepository(db *mongo.Database) domain.UsersRepository {
@@ -15,28 +16,21 @@ type usersRepo struct {
 }
 
 func (u usersRepo) Get(id int) (*domain.User, error) {
-	users := u.db.Collection("users")
-	result := users.FindOne(ctx, bson.M{"_id": id})
+	result := u.db.Collection("users").
+		FindOne(ctx, bson.M{"_id": id})
 
-	var dbUser bson.M
-	err := result.Decode(&dbUser)
+	var mongoUser user
+	err := result.Decode(&mongoUser)
 	if err != nil {
 		return nil, err
 	}
 
-	var user domain.User
-	user.ID, _ = dbUser["_id"].(int)
-	user.Name, _ = dbUser["name"].(string)
-	user.City, _ = dbUser["city"].(string)
-	user.Long, user.Lat = extractLocation(dbUser)
-
-	return &user, nil
+	return toDomainUser(&mongoUser), nil
 }
 
 func (u usersRepo) UpdateLoc(id int, lat, long float32) error {
-	users := u.db.Collection("users")
-
-	_, err := users.UpdateOne(ctx, bson.M{"_id": id}, bson.M{
+	// todo: use loc struct
+	_, err := u.db.Collection("users").UpdateOne(ctx, bson.M{"_id": id}, bson.M{
 		"$set": bson.M{"location": bson.M{
 			"type": "Point",
 			"coordinates": bson.D{
@@ -49,17 +43,19 @@ func (u usersRepo) UpdateLoc(id int, lat, long float32) error {
 	return err
 }
 
+// todo: handle duplicate key error
 func (u usersRepo) Create(id int, name string) error {
-	users := u.db.Collection("users")
-
-	// todo: handle duplicate key error
-	_, err := users.InsertOne(ctx, bson.M{
-		"_id":  id,
-		"name": name,
-		"city": "saint-petersburg",
-		"location": bson.D{
-			{"type", "Point"},
-			{"coordinates", []float32{}},
+	_, err := u.db.Collection("users").InsertOne(ctx, user{
+		ID:   id,
+		Name: name,
+		City: "saint-petersburg",
+		Location: loc{
+			Type: "Point",
+			// Angleterre coordinates
+			Coordinates: coords{
+				Longitude: 30.308643285123765,
+				Latitude:  59.93401788487186,
+			},
 		},
 	})
 
