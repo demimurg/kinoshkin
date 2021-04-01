@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"kinoshkin/internal/bot"
 	"kinoshkin/internal/conferencier"
 	"kinoshkin/internal/mongodb"
-	bot "kinoshkin/internal/telebot"
 	"log"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -27,5 +28,5 @@ func main() {
 		mongodb.NewSchedulesRepository(db),
 	)
 
-	bot.New(confSvc).Start()
+	bot.Start(confSvc)
 }

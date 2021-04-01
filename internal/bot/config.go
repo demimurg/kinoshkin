@@ -1,4 +1,4 @@
-package telebot
+package bot
 
 import (
 	"kinoshkin/pkg/env"

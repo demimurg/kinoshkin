@@ -1,20 +1,14 @@
-package telebot
+package bot
 
 import (
 	"kinoshkin/domain"
-	"kinoshkin/internal/telebot/views"
+	"kinoshkin/internal/bot/views"
 	logger "log"
 	"strings"
 
 	"github.com/pkg/errors"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
-
-type BotServer interface {
-	Start()
-}
-
-var limit = domain.P{Limit: 6}
 
 func log(err error, msg ...string) bool {
 	if err != nil {
@@ -25,14 +19,15 @@ func log(err error, msg ...string) bool {
 	return false
 }
 
-// New initialize handlers
-func New(svc domain.Conferencier) BotServer {
+func Start(svc domain.Conferencier) {
 	b, err := tb.NewBot(tb.Settings{
 		Token:   cfg.Token,
 		Verbose: cfg.LogTrace,
 		Poller:  &tb.LongPoller{Timeout: cfg.UpdateInterval},
 	})
 	log(err, "Bot initialization error")
+
+	var limit = domain.P{Limit: 6}
 
 	b.Handle("/start", func(m *tb.Message) {
 		err := svc.RegisterUser(
@@ -119,5 +114,5 @@ func New(svc domain.Conferencier) BotServer {
 		log(err)
 	})
 
-	return b
+	b.Start()
 }
