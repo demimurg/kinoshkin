@@ -3,10 +3,6 @@ package aggregator
 import (
 	"context"
 	"fmt"
-	"github.com/Jeffail/gabs/v2"
-	"github.com/kr/pretty"
-	"github.com/schollz/progressbar/v3"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,6 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Jeffail/gabs/v2"
+	"github.com/kr/pretty"
+	"github.com/schollz/progressbar/v3"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"

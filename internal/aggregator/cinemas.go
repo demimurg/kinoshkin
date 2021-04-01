@@ -3,10 +3,11 @@ package aggregator
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+
 	"github.com/pkg/errors"
 	"github.com/schollz/progressbar/v3"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
 )
 
 type coords struct {

@@ -2,10 +2,11 @@ package views
 
 import (
 	"fmt"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"kinoshkin/domain"
 	"strings"
 	"time"
+
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 var (

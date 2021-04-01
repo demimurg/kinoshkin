@@ -1,14 +1,15 @@
 package env
 
 import (
-	"github.com/caarlos0/env/v6"
-	"github.com/joho/godotenv"
-	"github.com/pkg/errors"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/caarlos0/env/v6"
+	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 )
 
 var once sync.Once
