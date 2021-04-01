@@ -3,12 +3,13 @@ package conferencier
 import "kinoshkin/domain"
 
 type conf struct {
-	cinemas domain.CinemasRepository
-	movies  domain.MoviesRepository
-	users   domain.UsersRepository
+	cinemas   domain.CinemasRepository
+	movies    domain.MoviesRepository
+	users     domain.UsersRepository
+	schedules domain.SchedulesRepository
 }
 
-func (c *conf) FindMovies(userID int, pag domain.P) ([]*domain.Movie, error) {
+func (c *conf) FindMovies(userID int, pag domain.P) ([]domain.Movie, error) {
 	user, err := c.users.Get(userID)
 	if err != nil {
 		return nil, err
@@ -17,7 +18,7 @@ func (c *conf) FindMovies(userID int, pag domain.P) ([]*domain.Movie, error) {
 	return c.movies.FindByRating(user.City, pag)
 }
 
-func (c *conf) FindCinemas(userID int, pag domain.P) ([]*domain.Cinema, error) {
+func (c *conf) FindCinemas(userID int, pag domain.P) ([]domain.Cinema, error) {
 	user, err := c.users.Get(userID)
 	if err != nil {
 		return nil, err
@@ -36,7 +37,7 @@ func (c *conf) GetMovieSchedule(userID int, movieID string, pag domain.P) ([]dom
 		return nil, err
 	}
 
-	return c.movies.GetSchedule(movieID, user, pag)
+	return c.schedules.GetForMovie(movieID, user, pag)
 }
 
 func (c *conf) GetCinema(cinemaID string) (*domain.Cinema, error) {
@@ -44,7 +45,7 @@ func (c *conf) GetCinema(cinemaID string) (*domain.Cinema, error) {
 }
 
 func (c *conf) GetCinemaSchedule(cinemaID string, pag domain.P) ([]domain.MovieWithSessions, error) {
-	return c.cinemas.GetSchedule(cinemaID, pag)
+	return c.schedules.GetForCinema(cinemaID, pag)
 }
 
 func (c *conf) UpdateUserLocation(userID int, lat, long float32) error {
@@ -59,10 +60,12 @@ func New(
 	cinemasRepo domain.CinemasRepository,
 	moviesRepo domain.MoviesRepository,
 	usersRepo domain.UsersRepository,
+	schedulesRepo domain.SchedulesRepository,
 ) *conf {
 	return &conf{
-		cinemas: cinemasRepo,
-		movies:  moviesRepo,
-		users:   usersRepo,
+		cinemas:   cinemasRepo,
+		movies:    moviesRepo,
+		users:     usersRepo,
+		schedules: schedulesRepo,
 	}
 }

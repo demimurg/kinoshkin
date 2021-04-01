@@ -30,25 +30,6 @@ type trailer struct {
 	Url  string `bson:"url,omitempty"`
 }
 
-type schedule struct {
-	City         string     `bson:"city"`
-	CinemaId     string     `bson:"cinema_id"`
-	MovieId      string     `bson:"movie_id"`
-	LastShowtime time.Time  `bson:"last"`
-	Showtimes    []showtime `bson:"showtimes"`
-}
-
-type showtime struct {
-	ID    string    `bson:"_id"`
-	Time  time.Time `bson:"time"`
-	Price int       `bson:"price"`
-}
-
-type movieSchedule struct {
-	Cinema   `bson:",inline"`
-	Schedule schedule `bson:"schedule"`
-}
-
 func toDomainMovie(mov *Movie) domain.Movie {
 	return domain.Movie{
 		ID:             mov.ID,

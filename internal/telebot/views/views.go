@@ -14,7 +14,7 @@ var (
 	LocationCmd = tb.ReplyButton{Text: "Обновить локацию📍", Location: true}
 )
 
-func MoviesList(movies []*domain.Movie) [][]tb.InlineButton {
+func MoviesList(movies []domain.Movie) [][]tb.InlineButton {
 	var table [][]tb.InlineButton
 	for _, mov := range movies {
 		table = append(table, []tb.InlineButton{
@@ -28,7 +28,7 @@ func MoviesList(movies []*domain.Movie) [][]tb.InlineButton {
 	return table
 }
 
-func CinemasList(cinemas []*domain.Cinema) [][]tb.InlineButton {
+func CinemasList(cinemas []domain.Cinema) [][]tb.InlineButton {
 	var table [][]tb.InlineButton
 	for _, cinema := range cinemas {
 		table = append(table, []tb.InlineButton{

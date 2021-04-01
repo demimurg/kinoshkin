@@ -1,12 +1,13 @@
 package telebot
 
 import (
-	"github.com/pkg/errors"
-	tb "gopkg.in/tucnak/telebot.v2"
 	"kinoshkin/domain"
 	"kinoshkin/internal/telebot/views"
 	logger "log"
 	"strings"
+
+	"github.com/pkg/errors"
+	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 type BotServer interface {

@@ -24,6 +24,7 @@ func main() {
 		mongodb.NewCinemasRepository(db),
 		mongodb.NewMoviesRepository(db),
 		mongodb.NewUsersRepository(db),
+		mongodb.NewSchedulesRepository(db),
 	)
 
 	bot.New(confSvc).Start()

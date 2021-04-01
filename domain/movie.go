@@ -41,16 +41,9 @@ type Movie struct {
 	Rating         Rating
 }
 
-// CinemaWithSessions is a schedule of the certain movie in some cinema
-type CinemaWithSessions struct {
-	Cinema
-	Sessions []Session
-}
-
 // MoviesRepository work with movies collection
 type MoviesRepository interface {
 	Create(movs []Movie) error
 	Get(movID string) (*Movie, error)
 	FindByRating(city string, pag P) ([]Movie, error)
-	GetSchedule(movieID string, user *User, pag P) ([]CinemaWithSessions, error)
 }
