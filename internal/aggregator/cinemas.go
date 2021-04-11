@@ -1,37 +1,35 @@
 package aggregator
 
 import (
-	"context"
 	"encoding/json"
+	"kinoshkin/domain"
 	"net/http"
 
 	"github.com/pkg/errors"
 	"github.com/schollz/progressbar/v3"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type coords struct {
-	Longitude float64 `bson:"longitude"`
-	Latitude  float64 `bson:"latitude"`
-}
-
-type loc struct {
-	Type        string `bson:"type"`
-	Coordinates coords `bson:"coordinates"`
-}
-
-type cinema struct {
-	ID       string   `bson:"_id"`
-	Name     string   `bson:"name"`
-	Address  string   `bson:"address"`
-	City     string   `bson:"city"`
-	Timezone string   `bson:"timezone"`
-	Metros   []string `bson:"metros,omitempty"`
-	Location loc      `bson:"location"`
+type cinemasJSON struct {
+	Items []struct {
+		ID      string
+		Title   string
+		Address string
+		City    struct {
+			ID       string
+			Timezone string
+		}
+		Coordinates struct {
+			Longitude float64
+			Latitude  float64
+		}
+		Metro []struct {
+			Name string
+		}
+	}
 }
 
 type cinemaAgg struct {
-	db *mongo.Database
+	repo domain.CinemasRepository
 }
 
 func (c cinemaAgg) Aggregate() error {
@@ -40,55 +38,34 @@ func (c cinemaAgg) Aggregate() error {
 		return errors.Wrap(err, "can't get cinemas external from api")
 	}
 
-	var cinemasRaw struct{ Items []map[string]interface{} }
+	var cinemasRaw cinemasJSON
 	err = json.NewDecoder(resp.Body).Decode(&cinemasRaw)
 	if err != nil {
 		return errors.Wrap(err, "decode body err")
 	}
+	_ = resp.Body.Close()
 
 	lenItems := int64(len(cinemasRaw.Items))
 	bar := progressbar.Default(lenItems,
 		"Cinemas aggregation...")
 
-	cinemas := make([]interface{}, lenItems)
+	cinemas := make([]domain.Cinema, lenItems)
 	for i, raw := range cinemasRaw.Items {
 		bar.Add(1)
-		city := raw["city"].(map[string]interface{})
-		coordinates := raw["coordinates"].(map[string]interface{})
+		metros := make([]string, len(raw.Metro))
+		for i, metro := range raw.Metro {
+			metros[i] = metro.Name
+		}
 
-		cinemas[i] = cinema{
-			ID:       raw["id"].(string),
-			Name:     raw["title"].(string),
-			Address:  raw["address"].(string),
-			City:     city["id"].(string),
-			Timezone: city["timezone"].(string),
-			Metros:   extractMetros(raw["metro"]),
-			Location: loc{
-				Type: "Point",
-				Coordinates: coords{
-					Longitude: coordinates["longitude"].(float64),
-					Latitude:  coordinates["latitude"].(float64),
-				},
-			},
+		cinemas[i] = domain.Cinema{
+			ID:      raw.ID,
+			Name:    raw.Title,
+			Address: raw.Address,
+			Metro:   metros,
+			Lat:     raw.Coordinates.Latitude,
+			Long:    raw.Coordinates.Longitude,
 		}
 	}
 
-	_, err = c.db.Collection("cinemas").InsertMany(context.TODO(), cinemas)
-
-	return err
-}
-
-func extractMetros(m interface{}) []string {
-	metrosI, ok := m.([]interface{})
-	if !ok {
-		return nil
-	}
-
-	var metros = make([]string, len(metrosI))
-	for i, metroI := range metrosI {
-		metro := metroI.(map[string]interface{})
-		metros[i] = metro["name"].(string)
-	}
-
-	return metros
+	return c.repo.Create(cinemas)
 }

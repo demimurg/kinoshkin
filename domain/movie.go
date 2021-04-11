@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 // Position in team
 type Position = string
 
@@ -19,26 +21,18 @@ type Rating struct {
 	IMDB, KP float64
 }
 
-// Genre is a genre of the concrete movie
-type Genre uint
-
-const (
-	Comedy Genre = iota + 1
-	Horror
-	Action
-)
-
 // Movie is just a movie data
 type Movie struct {
 	ID             string
+	KpID           string
 	Title          string
 	Description    string
 	PosterURL      string
-	Genre          Genre
-	Duration       int32
+	Duration       int
 	AgeRestriction string
 	FilmCrew       map[Position][]string
 	Rating         Rating
+	DateReleased   time.Time
 }
 
 // MoviesRepository work with movies collection

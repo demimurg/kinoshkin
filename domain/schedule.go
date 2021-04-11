@@ -6,7 +6,7 @@ import "time"
 type Session struct {
 	ID    string
 	Start time.Time
-	Price int32
+	Price int
 }
 
 // CinemaWithSessions is a schedule of the certain movie in some cinema

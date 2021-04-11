@@ -1,19 +1,14 @@
 package aggregator
 
-import "testing"
+import (
+	"kinoshkin/pkg/set"
+	"testing"
 
-func Test_convertToMins(t *testing.T) {
-	tests := []struct {
-		dur  string
-		want int
-	}{
-		{"1:37", 97},
-		{"0:24", 24},
-		{"abc", 0},
-	}
-	for _, tt := range tests {
-		if got := convertToMinutes(tt.dur); got != tt.want {
-			t.Errorf("convertToMinutes() = %v, want %v", got, tt.want)
-		}
-	}
+	"github.com/kr/pretty"
+)
+
+func TestKpApi(t *testing.T) {
+	kp := &kpAPI{seenMovies: set.New()}
+	kp.aggregateCinemaData("57f03c78b4660194c141e900")
+	pretty.Println(kp.result())
 }

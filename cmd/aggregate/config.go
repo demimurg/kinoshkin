@@ -7,8 +7,8 @@ import (
 type Config struct {
 	// Collections is subset of 'movies,cities,schedule'
 	Collections []string `env:"COLLECTIONS" envDefault:"movies"`
-	// MongoAggUrl is a mongodb cluster url
-	MongoAggUrl string `env:"MONGO_AGG_URL,required"`
+	// MongoAggURL is a mongodb cluster url
+	MongoAggURL string `env:"MONGO_AGG_URL,required"`
 }
 
 var cfg = Config{}

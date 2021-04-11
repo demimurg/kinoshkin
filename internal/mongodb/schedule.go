@@ -13,8 +13,8 @@ type showtime struct {
 
 type schedule struct {
 	City         string     `bson:"city"`
-	CinemaId     string     `bson:"cinema_id"`
-	MovieId      string     `bson:"movie_id"`
+	CinemaID     string     `bson:"cinema_id"`
+	MovieID      string     `bson:"movie_id"`
 	LastShowtime time.Time  `bson:"last"`
 	Showtimes    []showtime `bson:"showtimes"`
 }
@@ -35,7 +35,7 @@ func toDomainSessions(sched schedule) []domain.Session {
 		sessions[i] = domain.Session{
 			ID:    sched.Showtimes[i].ID,
 			Start: sched.Showtimes[i].Time,
-			Price: int32(sched.Showtimes[i].Price),
+			Price: sched.Showtimes[i].Price,
 		}
 	}
 	return sessions
@@ -53,14 +53,14 @@ func toMongoSchedule(sched domain.Schedule) schedule {
 		showtimes[i] = showtime{
 			ID:    ses.ID,
 			Time:  ses.Start,
-			Price: int(ses.Price),
+			Price: ses.Price,
 		}
 	}
 
 	return schedule{
 		City:         "saint-petersburg",
-		CinemaId:     sched.CinemaID,
-		MovieId:      sched.MovieID,
+		CinemaID:     sched.CinemaID,
+		MovieID:      sched.MovieID,
 		LastShowtime: last,
 		Showtimes:    showtimes,
 	}

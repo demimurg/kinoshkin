@@ -7,7 +7,7 @@ import (
 
 type Movie struct {
 	ID             string              `bson:"_id"`
-	KpId           string              `bson:"kp_id"`
+	KpID           string              `bson:"kp_id"`
 	Title          string              `bson:"title"`
 	TitleOriginal  string              `bson:"title_original,omitempty"`
 	Rating         rating              `bson:"rating,omitempty"`
@@ -27,18 +27,20 @@ type rating struct {
 
 type trailer struct {
 	Name string `bson:"name,omitempty"`
-	Url  string `bson:"url,omitempty"`
+	URL  string `bson:"url,omitempty"`
 }
 
 func toDomainMovie(mov *Movie) domain.Movie {
 	return domain.Movie{
 		ID:             mov.ID,
+		KpID:           mov.KpID,
 		Title:          mov.Title,
 		Description:    mov.Description,
 		PosterURL:      mov.LandscapeImg,
-		Duration:       int32(mov.Duration),
+		Duration:       mov.Duration,
 		AgeRestriction: mov.AgeRestriction,
 		FilmCrew:       mov.Staff,
+		DateReleased:   mov.DateReleased,
 		Rating: domain.Rating{
 			IMDB: mov.Rating.IMDb,
 			KP:   mov.Rating.KP,
@@ -49,12 +51,14 @@ func toDomainMovie(mov *Movie) domain.Movie {
 func toMongoMovie(mov *domain.Movie) *Movie {
 	return &Movie{
 		ID:             mov.ID,
+		KpID:           mov.KpID,
 		Title:          mov.Title,
 		Staff:          mov.FilmCrew,
-		Duration:       int(mov.Duration),
+		Duration:       mov.Duration,
 		Description:    mov.Description,
 		LandscapeImg:   mov.PosterURL,
 		AgeRestriction: mov.AgeRestriction,
+		DateReleased:   mov.DateReleased,
 		Rating: rating{
 			IMDb: mov.Rating.IMDB,
 			KP:   mov.Rating.KP,

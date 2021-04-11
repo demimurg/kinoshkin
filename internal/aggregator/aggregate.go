@@ -1,29 +1,29 @@
 package aggregator
 
 import (
-	"context"
-
-	"go.mongodb.org/mongo-driver/mongo"
+	"kinoshkin/domain"
 )
 
 type Aggregator interface {
 	Aggregate() error
 }
 
-// todo: remove collection drop later
-var ctx = context.TODO()
-
-func Cinemas(db *mongo.Database) Aggregator {
-	_ = db.Collection("cinemas").Drop(ctx)
-	return cinemaAgg{db: db}
+func Cinemas(repo domain.CinemasRepository) Aggregator {
+	return cinemaAgg{repo}
 }
 
-func Cities(db *mongo.Database) Aggregator {
-	_ = db.Collection("cities").Drop(ctx)
-	return cityAgg{db: db}
+func Cities(repo domain.CitiesRepository) Aggregator {
+	return cityAgg{repo}
 }
 
-func Schedule(db *mongo.Database) Aggregator {
-	_ = db.Collection("schedule").Drop(ctx)
-	return &scheduleAgg{db: db, movies: make(map[string]*movie), emptyMovies: make(map[string]*movie)}
+func Schedule(
+	movies domain.MoviesRepository,
+	cinemas domain.CinemasRepository,
+	schedules domain.SchedulesRepository,
+) Aggregator {
+	return &scheduleAgg{
+		movies:    movies,
+		cinemas:   cinemas,
+		schedules: schedules,
+	}
 }

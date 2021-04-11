@@ -1,52 +1,50 @@
 package aggregator
 
 import (
-	"context"
 	"encoding/json"
+	"kinoshkin/domain"
 	"net/http"
 
 	"github.com/pkg/errors"
 	"github.com/schollz/progressbar/v3"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type city struct {
-	ID   string `bson:"_id"`
-	Name string `bson:"name"`
+type citiesJSON struct {
+	Data []struct {
+		ID   string
+		Name string
+	}
 }
 
 type cityAgg struct {
-	db     *mongo.Database
-	cities []city
-}
-
-func (cityAgg) Name() string {
-	return "Cities Aggregator"
+	repo domain.CitiesRepository
 }
 
 func (c cityAgg) Aggregate() error {
-	resp, err := http.Get(cfg.CitiesURL + "?city=saint-petersburg")
+	resp, err := http.Get(cfg.CitiesURL + "?raw=saint-petersburg")
 	if err != nil {
 		return errors.Wrap(err, "get api request")
 	}
 
-	var cities struct{ Data []city }
-	err = json.NewDecoder(resp.Body).Decode(&cities)
+	var citiesRaw citiesJSON
+	err = json.NewDecoder(resp.Body).Decode(&citiesRaw)
 	if err != nil {
 		return errors.Wrap(err, "decoding response body")
 	}
+	_ = resp.Body.Close()
 
-	lenCities := int64(len(cities.Data))
+	lenCities := int64(len(citiesRaw.Data))
 	bar := progressbar.Default(lenCities,
 		"Cities aggregation...")
 
-	// convert to db argument type
-	citiesI := make([]interface{}, lenCities)
-	for i, city := range cities.Data {
+	cities := make([]domain.City, lenCities)
+	for i, raw := range citiesRaw.Data {
 		bar.Add(1)
-		citiesI[i] = city
+		cities[i] = domain.City{
+			ID:   raw.ID,
+			Name: raw.Name,
+		}
 	}
-	_, err = c.db.Collection("cities").InsertMany(context.TODO(), citiesI)
 
-	return err
+	return c.repo.Create(cities)
 }
