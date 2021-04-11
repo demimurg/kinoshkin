@@ -37,6 +37,25 @@ func (c cinemasRepo) Get(cinemaID string) (*domain.Cinema, error) {
 	return &domainCinema, nil
 }
 
+func (c cinemasRepo) GetAll(cityID string) ([]domain.Cinema, error) {
+	cursor, err := c.db.Collection("cinemas").Find(ctx, bson.M{"city_id": cityID})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var cinemas []domain.Cinema
+	for cursor.Next(ctx) {
+		var mongoCinema Cinema
+		if err := cursor.Decode(&mongoCinema); err != nil {
+			return nil, err
+		}
+		cinemas = append(cinemas, toDomainCinema(&mongoCinema))
+	}
+
+	return cinemas, nil
+}
+
 func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]domain.Cinema, error) {
 	geoNear := bson.D{
 		{"$geoNear", bson.M{

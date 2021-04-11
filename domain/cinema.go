@@ -14,6 +14,7 @@ type Cinema struct {
 type CinemasRepository interface {
 	Create(cinemas []Cinema) error
 	Get(cinemaID string) (*Cinema, error)
+	GetAll(city string) ([]Cinema, error)
 	// FindNearby search cinemas near user location
 	FindNearby(user *User, pag P) ([]Cinema, error)
 }
