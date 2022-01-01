@@ -36,7 +36,7 @@ func Start(
 
 	b.Handle("/start", func(m *tb.Message) {
 		err := svc.RegisterUser(
-			m.Sender.ID, strings.Join([]string{
+			int(m.Sender.ID), strings.Join([]string{
 				m.Sender.FirstName, m.Sender.LastName,
 			}, " "),
 		)
@@ -60,12 +60,12 @@ func Start(
 
 		switch m.Text {
 		case views.CinemasCmd.Text:
-			cinemas, err := svc.FindCinemas(m.Sender.ID, limit)
+			cinemas, err := svc.FindCinemas(int(m.Sender.ID), limit)
 			log(err, "Find cinemas")
 			msg = "cinemas"
 			buttons = views.CinemasList(cinemas)
 		case views.MoviesCmd.Text:
-			movies, err := svc.FindMovies(m.Sender.ID, limit)
+			movies, err := svc.FindMovies(int(m.Sender.ID), limit)
 			log(err, "Find movies")
 			msg = "movies"
 			buttons = views.MoviesList(movies)
@@ -99,7 +99,7 @@ func Start(
 
 			msg, opts = views.CinemaCard(cinema, schedule)
 		case views.MovieSchedulePrefix:
-			schedule, err := svc.GetMovieSchedule(cb.Sender.ID, id, limit)
+			schedule, err := svc.GetMovieSchedule(int(cb.Sender.ID), id, limit)
 			log(err, "Get movie schedule")
 
 			msg, opts = views.MovieScheduleTable(schedule)
@@ -112,7 +112,7 @@ func Start(
 	})
 
 	b.Handle(tb.OnLocation, func(m *tb.Message) {
-		err := svc.UpdateUserLocation(m.Sender.ID, m.Location.Lat, m.Location.Lng)
+		err := svc.UpdateUserLocation(int(m.Sender.ID), m.Location.Lat, m.Location.Lng)
 		log(err, "Update user location")
 
 		_, err = b.Send(m.Sender, "Местоположение обновлено")
