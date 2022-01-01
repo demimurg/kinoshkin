@@ -1,13 +1,14 @@
 package mongodb
 
 import (
-	"kinoshkin/domain"
+	"kinoshkin/entity"
+	"kinoshkin/usecase"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewCinemasRepository(db *mongo.Database) domain.CinemasRepository {
+func NewCinemasRepository(db *mongo.Database) usecase.CinemasRepository {
 	return cinemasRepo{db}
 }
 
@@ -15,7 +16,7 @@ type cinemasRepo struct {
 	db *mongo.Database
 }
 
-func (c cinemasRepo) Create(cinemas []domain.Cinema) error {
+func (c cinemasRepo) Create(cinemas []entity.Cinema) error {
 	mongoCinemas := make([]interface{}, len(cinemas))
 	for i := range cinemas {
 		mongoCinemas[i] = toMongoCinema(&cinemas[i])
@@ -25,7 +26,7 @@ func (c cinemasRepo) Create(cinemas []domain.Cinema) error {
 }
 
 // todo: add distance information ($geoNear)
-func (c cinemasRepo) Get(cinemaID string) (*domain.Cinema, error) {
+func (c cinemasRepo) Get(cinemaID string) (*entity.Cinema, error) {
 	var cin Cinema
 	err := c.db.Collection("cinemas").
 		FindOne(ctx, bson.M{"_id": cinemaID}).Decode(&cin)
@@ -37,14 +38,14 @@ func (c cinemasRepo) Get(cinemaID string) (*domain.Cinema, error) {
 	return &domainCinema, nil
 }
 
-func (c cinemasRepo) GetAll(cityID string) ([]domain.Cinema, error) {
+func (c cinemasRepo) GetAll(cityID string) ([]entity.Cinema, error) {
 	cursor, err := c.db.Collection("cinemas").Find(ctx, bson.M{"city_id": cityID})
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
-	var cinemas []domain.Cinema
+	var cinemas []entity.Cinema
 	for cursor.Next(ctx) {
 		var mongoCinema Cinema
 		if err := cursor.Decode(&mongoCinema); err != nil {
@@ -56,7 +57,7 @@ func (c cinemasRepo) GetAll(cityID string) ([]domain.Cinema, error) {
 	return cinemas, nil
 }
 
-func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]domain.Cinema, error) {
+func (c cinemasRepo) FindNearby(user *entity.User, pag usecase.P) ([]entity.Cinema, error) {
 	geoNear := bson.D{
 		{"$geoNear", bson.M{
 			"near": bson.M{
@@ -83,7 +84,7 @@ func (c cinemasRepo) FindNearby(user *domain.User, pag domain.P) ([]domain.Cinem
 	}
 	defer docs.Close(ctx)
 
-	var cinemas []domain.Cinema
+	var cinemas []entity.Cinema
 	for docs.Next(ctx) {
 		var mongoCinema Cinema
 		if err := docs.Decode(&mongoCinema); err != nil {

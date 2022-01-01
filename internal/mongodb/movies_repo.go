@@ -2,7 +2,8 @@ package mongodb
 
 import (
 	"context"
-	"kinoshkin/domain"
+	"kinoshkin/entity"
+	"kinoshkin/usecase"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,7 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func NewMoviesRepository(db *mongo.Database) domain.MoviesRepository {
+func NewMoviesRepository(db *mongo.Database) usecase.MoviesRepository {
 	return moviesRepo{db}
 }
 
@@ -20,7 +21,7 @@ type moviesRepo struct {
 
 var ctx = context.TODO()
 
-func (m moviesRepo) Create(movs []domain.Movie) error {
+func (m moviesRepo) Create(movs []entity.Movie) error {
 	movies := m.db.Collection("movies")
 	opts := &options.UpdateOptions{}
 	opts = opts.SetUpsert(true)
@@ -39,7 +40,7 @@ func (m moviesRepo) Create(movs []domain.Movie) error {
 	return nil
 }
 
-func (m moviesRepo) Get(movID string) (*domain.Movie, error) {
+func (m moviesRepo) Get(movID string) (*entity.Movie, error) {
 	coll := m.db.Collection("movies")
 
 	var mongoMov Movie
@@ -52,7 +53,7 @@ func (m moviesRepo) Get(movID string) (*domain.Movie, error) {
 	return &mov, nil
 }
 
-func (m moviesRepo) FindByRating(city string, pag domain.P) ([]domain.Movie, error) {
+func (m moviesRepo) FindByRating(city string, pag usecase.P) ([]entity.Movie, error) {
 	getFutureSessions := bson.D{
 		{"$match", bson.D{
 			{"city", city},
@@ -111,7 +112,7 @@ func (m moviesRepo) FindByRating(city string, pag domain.P) ([]domain.Movie, err
 	}
 	defer docs.Close(ctx)
 
-	var movies []domain.Movie
+	var movies []entity.Movie
 	for docs.Next(ctx) {
 		var mongoMov Movie
 		if err := docs.Decode(&mongoMov); err != nil {

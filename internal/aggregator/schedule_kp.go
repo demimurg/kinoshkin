@@ -3,7 +3,7 @@ package aggregator
 import (
 	"encoding/json"
 	"fmt"
-	"kinoshkin/domain"
+	"kinoshkin/entity"
 	"kinoshkin/pkg/set"
 	"log"
 	"net/http"
@@ -50,8 +50,8 @@ type scheduleJSON struct {
 }
 
 type kpAPI struct {
-	movies     []domain.Movie
-	schedules  []domain.Schedule
+	movies     []entity.Movie
+	schedules  []entity.Schedule
 	seenMovies set.Strings
 }
 
@@ -76,11 +76,11 @@ func (api *kpAPI) aggregateCinemaData(cinemaID string) {
 	}
 
 	for _, item := range data.Schedule.Items {
-		var sessions []domain.Session
+		var sessions []entity.Session
 		for _, format := range item.Schedule {
 			for _, ses := range format.Sessions {
 				start, _ := time.Parse("2006-01-02T15:04:05", ses.Datetime)
-				sessions = append(sessions, domain.Session{
+				sessions = append(sessions, entity.Session{
 					ID:    ses.Ticket.ID,
 					Start: start,
 					Price: int(ses.Ticket.Price.Min / 100),
@@ -88,7 +88,7 @@ func (api *kpAPI) aggregateCinemaData(cinemaID string) {
 			}
 		}
 
-		api.schedules = append(api.schedules, domain.Schedule{
+		api.schedules = append(api.schedules, entity.Schedule{
 			MovieID:  item.Event.ID,
 			CinemaID: cinemaID,
 			Sessions: sessions,
@@ -113,7 +113,7 @@ func (api *kpAPI) aggregateCinemaData(cinemaID string) {
 
 		dateReleased, _ := time.Parse("2006-01-02", item.Event.DateReleased)
 
-		api.movies = append(api.movies, domain.Movie{
+		api.movies = append(api.movies, entity.Movie{
 			KpID:           kpID,
 			DateReleased:   dateReleased,
 			ID:             item.Event.ID,
@@ -121,11 +121,11 @@ func (api *kpAPI) aggregateCinemaData(cinemaID string) {
 			Description:    item.Event.Argument,
 			PosterURL:      item.Event.Image.EventCoverL2x.URL,
 			AgeRestriction: item.Event.ContentRating,
-			Rating:         domain.Rating{KP: item.Event.Kinopoisk.Value},
+			Rating:         entity.Rating{KP: item.Event.Kinopoisk.Value},
 		})
 	}
 }
 
-func (api *kpAPI) result() ([]domain.Movie, []domain.Schedule) {
+func (api *kpAPI) result() ([]entity.Movie, []entity.Schedule) {
 	return api.movies, api.schedules
 }

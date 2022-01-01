@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"kinoshkin/domain"
+	"kinoshkin/entity"
 	"time"
 )
 
@@ -30,8 +30,8 @@ type trailer struct {
 	URL  string `bson:"url,omitempty"`
 }
 
-func toDomainMovie(mov *Movie) domain.Movie {
-	return domain.Movie{
+func toDomainMovie(mov *Movie) entity.Movie {
+	return entity.Movie{
 		ID:             mov.ID,
 		KpID:           mov.KpID,
 		Title:          mov.Title,
@@ -41,14 +41,14 @@ func toDomainMovie(mov *Movie) domain.Movie {
 		AgeRestriction: mov.AgeRestriction,
 		FilmCrew:       mov.Staff,
 		DateReleased:   mov.DateReleased,
-		Rating: domain.Rating{
+		Rating: entity.Rating{
 			IMDB: mov.Rating.IMDb,
 			KP:   mov.Rating.KP,
 		},
 	}
 }
 
-func toMongoMovie(mov *domain.Movie) *Movie {
+func toMongoMovie(mov *entity.Movie) *Movie {
 	return &Movie{
 		ID:             mov.ID,
 		KpID:           mov.KpID,

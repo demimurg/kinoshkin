@@ -1,25 +1,25 @@
 package aggregator
 
 import (
-	"kinoshkin/domain"
+	"kinoshkin/usecase"
 )
 
 type Aggregator interface {
 	Aggregate() error
 }
 
-func Cinemas(repo domain.CinemasRepository) Aggregator {
+func Cinemas(repo usecase.CinemasRepository) Aggregator {
 	return cinemaAgg{repo}
 }
 
-func Cities(repo domain.CitiesRepository) Aggregator {
+func Cities(repo usecase.CitiesRepository) Aggregator {
 	return cityAgg{repo}
 }
 
 func Schedule(
-	movies domain.MoviesRepository,
-	cinemas domain.CinemasRepository,
-	schedules domain.SchedulesRepository,
+	movies usecase.MoviesRepository,
+	cinemas usecase.CinemasRepository,
+	schedules usecase.SchedulesRepository,
 ) Aggregator {
 	return &scheduleAgg{
 		movies:    movies,

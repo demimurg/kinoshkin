@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"kinoshkin/domain"
+	"kinoshkin/entity"
 	"time"
 )
 
@@ -29,10 +29,10 @@ type movieSchedule struct {
 	Schedule schedule `bson:"schedule"`
 }
 
-func toDomainSessions(sched schedule) []domain.Session {
-	sessions := make([]domain.Session, len(sched.Showtimes))
+func toDomainSessions(sched schedule) []entity.Session {
+	sessions := make([]entity.Session, len(sched.Showtimes))
 	for i := range sched.Showtimes {
-		sessions[i] = domain.Session{
+		sessions[i] = entity.Session{
 			ID:    sched.Showtimes[i].ID,
 			Start: sched.Showtimes[i].Time,
 			Price: sched.Showtimes[i].Price,
@@ -41,7 +41,7 @@ func toDomainSessions(sched schedule) []domain.Session {
 	return sessions
 }
 
-func toMongoSchedule(sched domain.Schedule) schedule {
+func toMongoSchedule(sched entity.Schedule) schedule {
 	var (
 		last      time.Time
 		showtimes = make([]showtime, len(sched.Sessions))

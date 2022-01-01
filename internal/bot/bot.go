@@ -1,8 +1,8 @@
 package bot
 
 import (
-	"kinoshkin/domain"
 	"kinoshkin/internal/bot/views"
+	"kinoshkin/usecase"
 	logger "log"
 	"strings"
 	"time"
@@ -21,7 +21,7 @@ func log(err error, msg ...string) bool {
 }
 
 func Start(
-	svc domain.Conferencier,
+	svc usecase.Conferencier,
 	token string, verboseLogs bool,
 	telegramPollInterval time.Duration,
 ) {
@@ -32,7 +32,7 @@ func Start(
 	})
 	log(err, "Bot initialization error")
 
-	var limit = domain.P{Limit: 6}
+	var limit = usecase.P{Limit: 6}
 
 	b.Handle("/start", func(m *tb.Message) {
 		err := svc.RegisterUser(

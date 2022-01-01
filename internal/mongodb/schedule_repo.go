@@ -1,14 +1,15 @@
 package mongodb
 
 import (
-	"kinoshkin/domain"
+	"kinoshkin/entity"
+	"kinoshkin/usecase"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewSchedulesRepository(db *mongo.Database) domain.SchedulesRepository {
+func NewSchedulesRepository(db *mongo.Database) usecase.SchedulesRepository {
 	return schedulesRepo{db}
 }
 
@@ -16,7 +17,7 @@ type schedulesRepo struct {
 	db *mongo.Database
 }
 
-func (s schedulesRepo) Create(schedules []domain.Schedule) error {
+func (s schedulesRepo) Create(schedules []entity.Schedule) error {
 	mongoSchedules := make([]interface{}, len(schedules))
 	for i, domainSched := range schedules {
 		mongoSchedules[i] = toMongoSchedule(domainSched)
@@ -26,7 +27,7 @@ func (s schedulesRepo) Create(schedules []domain.Schedule) error {
 	return err
 }
 
-func (s schedulesRepo) GetForMovie(movieID string, user *domain.User, pag domain.P) ([]domain.CinemaWithSessions, error) {
+func (s schedulesRepo) GetForMovie(movieID string, user *entity.User, pag usecase.P) ([]entity.CinemaWithSessions, error) {
 	calculateCinemasDist := bson.D{
 		{"$geoNear", bson.M{
 			"near": bson.M{
@@ -84,14 +85,14 @@ func (s schedulesRepo) GetForMovie(movieID string, user *domain.User, pag domain
 	}
 	defer docs.Close(ctx)
 
-	var cinemasList []domain.CinemaWithSessions
+	var cinemasList []entity.CinemaWithSessions
 	for docs.Next(ctx) {
 		var movieSched movieSchedule
 		if err := docs.Decode(&movieSched); err != nil {
 			return nil, err
 		}
 
-		cinemasList = append(cinemasList, domain.CinemaWithSessions{
+		cinemasList = append(cinemasList, entity.CinemaWithSessions{
 			Cinema:   toDomainCinema(&movieSched.Cinema),
 			Sessions: toDomainSessions(movieSched.Schedule),
 		})
@@ -100,7 +101,7 @@ func (s schedulesRepo) GetForMovie(movieID string, user *domain.User, pag domain
 	return cinemasList, nil
 }
 
-func (s schedulesRepo) GetForCinema(cinemaID string, pag domain.P) ([]domain.MovieWithSessions, error) {
+func (s schedulesRepo) GetForCinema(cinemaID string, pag usecase.P) ([]entity.MovieWithSessions, error) {
 	joinScheduleToMovies := bson.D{
 		{"$lookup", bson.M{
 			"from": "schedule",
@@ -152,14 +153,14 @@ func (s schedulesRepo) GetForCinema(cinemaID string, pag domain.P) ([]domain.Mov
 	}
 	defer docs.Close(ctx)
 
-	var moviesList []domain.MovieWithSessions
+	var moviesList []entity.MovieWithSessions
 	for docs.Next(ctx) {
 		var cinSchedule cinemaSchedule
 		if err := docs.Decode(&cinSchedule); err != nil {
 			return nil, err
 		}
 
-		moviesList = append(moviesList, domain.MovieWithSessions{
+		moviesList = append(moviesList, entity.MovieWithSessions{
 			Movie:    toDomainMovie(&cinSchedule.Movie),
 			Sessions: toDomainSessions(cinSchedule.Schedule),
 		})

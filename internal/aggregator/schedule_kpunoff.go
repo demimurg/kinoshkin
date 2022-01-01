@@ -3,7 +3,7 @@ package aggregator
 import (
 	"encoding/json"
 	"fmt"
-	"kinoshkin/domain"
+	"kinoshkin/entity"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,7 +53,7 @@ func (api *kpUnoffAPI) get(resourceUrl, id string, dest interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(dest)
 }
 
-func (api *kpUnoffAPI) extendMovie(mov *domain.Movie) {
+func (api *kpUnoffAPI) extendMovie(mov *entity.Movie) {
 	var (
 		movieJSON unoffMovieJSON
 		staffJSON unoffStaffJSON
@@ -61,23 +61,23 @@ func (api *kpUnoffAPI) extendMovie(mov *domain.Movie) {
 	_ = api.get(movieDataURL, mov.KpID, &movieJSON)
 	_ = api.get(staffURL, mov.KpID, &staffJSON)
 
-	mov.FilmCrew = make(map[domain.Position][]string)
-	var pos domain.Position
+	mov.FilmCrew = make(map[entity.Position][]string)
+	var pos entity.Position
 	for _, employee := range staffJSON {
 		switch employee.ProfessionKey {
 		case "DIRECTOR":
-			pos = domain.Director
+			pos = entity.Director
 		case "WRITER":
-			pos = domain.Screenwriter
+			pos = entity.Screenwriter
 		case "OPERATOR":
-			pos = domain.Operator
+			pos = entity.Operator
 		case "COMPOSITOR":
-			pos = domain.Operator
+			pos = entity.Operator
 		case "ACTOR":
 			if len(mov.FilmCrew["actor"]) > 6 {
 				continue
 			}
-			pos = domain.Actor
+			pos = entity.Actor
 		default:
 			continue
 		}

@@ -1,4 +1,4 @@
-package domain
+package entity
 
 import "time"
 
@@ -33,11 +33,4 @@ type Movie struct {
 	FilmCrew       map[Position][]string
 	Rating         Rating
 	DateReleased   time.Time
-}
-
-// MoviesRepository work with movies collection
-type MoviesRepository interface {
-	Create(movs []Movie) error
-	Get(movID string) (*Movie, error)
-	FindByRating(city string, pag P) ([]Movie, error)
 }

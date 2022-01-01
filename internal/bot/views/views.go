@@ -2,7 +2,7 @@ package views
 
 import (
 	"fmt"
-	"kinoshkin/domain"
+	"kinoshkin/entity"
 	"strings"
 	"time"
 
@@ -15,7 +15,7 @@ var (
 	LocationCmd = tb.ReplyButton{Text: "Обновить локацию📍", Location: true}
 )
 
-func MoviesList(movies []domain.Movie) [][]tb.InlineButton {
+func MoviesList(movies []entity.Movie) [][]tb.InlineButton {
 	var table [][]tb.InlineButton
 	for _, mov := range movies {
 		table = append(table, []tb.InlineButton{
@@ -29,7 +29,7 @@ func MoviesList(movies []domain.Movie) [][]tb.InlineButton {
 	return table
 }
 
-func CinemasList(cinemas []domain.Cinema) [][]tb.InlineButton {
+func CinemasList(cinemas []entity.Cinema) [][]tb.InlineButton {
 	var table [][]tb.InlineButton
 	for _, cinema := range cinemas {
 		table = append(table, []tb.InlineButton{
@@ -43,17 +43,17 @@ func CinemasList(cinemas []domain.Cinema) [][]tb.InlineButton {
 	return table
 }
 
-func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
+func MovieCard(mov *entity.Movie) (msg interface{}, opts []interface{}) {
 	title := fmt.Sprintf("*%s*", mov.Title)
 	duration := fmt.Sprintf("Продолжительность: `%d мин`", mov.Duration)
 
 	creatorsList := limit(merge(
-		mov.FilmCrew[domain.Director],
-		mov.FilmCrew[domain.Screenwriter],
+		mov.FilmCrew[entity.Director],
+		mov.FilmCrew[entity.Screenwriter],
 	), 2)
 	creators := "Создатели: `" + strings.Join(creatorsList, ", ") + "`"
 
-	actorsList := limit(mov.FilmCrew[domain.Actor], 4)
+	actorsList := limit(mov.FilmCrew[entity.Actor], 4)
 	actors := fmt.Sprintf("Актеры: `%s`", strings.Join(actorsList, ", "))
 	description := "_" + mov.Description + "_"
 
@@ -83,7 +83,7 @@ func MovieCard(mov *domain.Movie) (msg interface{}, opts []interface{}) {
 		}}
 }
 
-func CinemaCard(cinema *domain.Cinema, schedule []domain.MovieWithSessions) (msg interface{}, opts []interface{}) {
+func CinemaCard(cinema *entity.Cinema, schedule []entity.MovieWithSessions) (msg interface{}, opts []interface{}) {
 	address := cinema.Address
 	if len(cinema.Metro) > 0 {
 		address = "🚇" + strings.Join(cinema.Metro, ", ") + "\n" + address
@@ -109,7 +109,7 @@ func CinemaCard(cinema *domain.Cinema, schedule []domain.MovieWithSessions) (msg
 		}}
 }
 
-func MovieScheduleTable(schedule []domain.CinemaWithSessions) (interface{}, []interface{}) {
+func MovieScheduleTable(schedule []entity.CinemaWithSessions) (interface{}, []interface{}) {
 	var table [][]tb.InlineButton
 	for _, cin := range schedule {
 		cinemaTitle := fmt.Sprintf("%s ~ %.2fкм", cin.Name, float32(cin.Distance)/1000)
@@ -126,7 +126,7 @@ func MovieScheduleTable(schedule []domain.CinemaWithSessions) (interface{}, []in
 	}}
 }
 
-func renderSessions(sess []domain.Session) [][]tb.InlineButton {
+func renderSessions(sess []entity.Session) [][]tb.InlineButton {
 	var (
 		table [][]tb.InlineButton
 		row   []tb.InlineButton

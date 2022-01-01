@@ -1,13 +1,14 @@
 package mongodb
 
 import (
-	"kinoshkin/domain"
+	"kinoshkin/entity"
+	"kinoshkin/usecase"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewUsersRepository(db *mongo.Database) domain.UsersRepository {
+func NewUsersRepository(db *mongo.Database) usecase.UsersRepository {
 	return usersRepo{db}
 }
 
@@ -15,7 +16,7 @@ type usersRepo struct {
 	db *mongo.Database
 }
 
-func (u usersRepo) Get(id int) (*domain.User, error) {
+func (u usersRepo) Get(id int) (*entity.User, error) {
 	result := u.db.Collection("users").
 		FindOne(ctx, bson.M{"_id": id})
 

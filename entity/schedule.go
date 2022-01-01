@@ -1,4 +1,4 @@
-package domain
+package entity
 
 import "time"
 
@@ -25,10 +25,4 @@ type Schedule struct {
 	MovieID  string
 	CinemaID string
 	Sessions []Session
-}
-
-type SchedulesRepository interface {
-	Create(schedules []Schedule) error
-	GetForMovie(movieID string, user *User, pag P) ([]CinemaWithSessions, error)
-	GetForCinema(cinemaID string, pag P) ([]MovieWithSessions, error)
 }

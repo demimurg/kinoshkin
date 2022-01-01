@@ -2,7 +2,8 @@ package aggregator
 
 import (
 	"encoding/json"
-	"kinoshkin/domain"
+	"kinoshkin/entity"
+	"kinoshkin/usecase"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ type citiesJSON struct {
 }
 
 type cityAgg struct {
-	repo domain.CitiesRepository
+	repo usecase.CitiesRepository
 }
 
 func (c cityAgg) Aggregate() error {
@@ -37,10 +38,10 @@ func (c cityAgg) Aggregate() error {
 	bar := progressbar.Default(lenCities,
 		"Cities aggregation...")
 
-	cities := make([]domain.City, lenCities)
+	cities := make([]entity.City, lenCities)
 	for i, raw := range citiesRaw.Data {
 		bar.Add(1)
-		cities[i] = domain.City{
+		cities[i] = entity.City{
 			ID:   raw.ID,
 			Name: raw.Name,
 		}

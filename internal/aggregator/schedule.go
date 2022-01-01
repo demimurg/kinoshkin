@@ -1,16 +1,16 @@
 package aggregator
 
 import (
-	"kinoshkin/domain"
 	"kinoshkin/pkg/set"
+	"kinoshkin/usecase"
 
 	"github.com/schollz/progressbar/v3"
 )
 
 type scheduleAgg struct {
-	movies    domain.MoviesRepository
-	cinemas   domain.CinemasRepository
-	schedules domain.SchedulesRepository
+	movies    usecase.MoviesRepository
+	cinemas   usecase.CinemasRepository
+	schedules usecase.SchedulesRepository
 }
 
 func (s *scheduleAgg) Aggregate() error {

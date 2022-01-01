@@ -1,6 +1,6 @@
 package mongodb
 
-import "kinoshkin/domain"
+import "kinoshkin/entity"
 
 type user struct {
 	ID       int    `bson:"_id"`
@@ -9,8 +9,8 @@ type user struct {
 	Location loc    `bson:"location"`
 }
 
-func toDomainUser(u *user) *domain.User {
-	return &domain.User{
+func toDomainUser(u *user) *entity.User {
+	return &entity.User{
 		ID:   u.ID,
 		Name: u.Name,
 		Lat:  u.Location.Coordinates.Latitude,

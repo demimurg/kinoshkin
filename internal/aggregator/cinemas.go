@@ -2,7 +2,8 @@ package aggregator
 
 import (
 	"encoding/json"
-	"kinoshkin/domain"
+	"kinoshkin/entity"
+	"kinoshkin/usecase"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -29,7 +30,7 @@ type cinemasJSON struct {
 }
 
 type cinemaAgg struct {
-	repo domain.CinemasRepository
+	repo usecase.CinemasRepository
 }
 
 func (c cinemaAgg) Aggregate() error {
@@ -49,7 +50,7 @@ func (c cinemaAgg) Aggregate() error {
 	bar := progressbar.Default(lenItems,
 		"Cinemas aggregation...")
 
-	cinemas := make([]domain.Cinema, lenItems)
+	cinemas := make([]entity.Cinema, lenItems)
 	for i, raw := range cinemasRaw.Items {
 		bar.Add(1)
 		metros := make([]string, len(raw.Metro))
@@ -57,7 +58,7 @@ func (c cinemaAgg) Aggregate() error {
 			metros[i] = metro.Name
 		}
 
-		cinemas[i] = domain.Cinema{
+		cinemas[i] = entity.Cinema{
 			ID:      raw.ID,
 			Name:    raw.Title,
 			Address: raw.Address,

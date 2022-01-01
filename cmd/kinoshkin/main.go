@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"kinoshkin/internal/bot"
-	"kinoshkin/internal/conferencier"
 	"kinoshkin/internal/mongodb"
+	"kinoshkin/usecase"
 	"log"
 	"time"
 
@@ -45,7 +45,7 @@ func main() {
 	defer client.Disconnect(ctx)
 
 	db := client.Database("kinoshkin")
-	confSvc := conferencier.New(
+	confSvc := usecase.NewConferencier(
 		mongodb.NewCinemasRepository(db),
 		mongodb.NewMoviesRepository(db),
 		mongodb.NewUsersRepository(db),

@@ -1,8 +1,6 @@
 package mongodb
 
-import (
-	"kinoshkin/domain"
-)
+import "kinoshkin/entity"
 
 type Cinema struct {
 	ID       string   `bson:"_id"`
@@ -25,7 +23,7 @@ type loc struct {
 	Coordinates coords `bson:"coordinates"`
 }
 
-func toMongoCinema(cin *domain.Cinema) Cinema {
+func toMongoCinema(cin *entity.Cinema) Cinema {
 	return Cinema{
 		ID:       cin.ID,
 		Name:     cin.Name,
@@ -43,8 +41,8 @@ func toMongoCinema(cin *domain.Cinema) Cinema {
 	}
 }
 
-func toDomainCinema(cin *Cinema) domain.Cinema {
-	return domain.Cinema{
+func toDomainCinema(cin *Cinema) entity.Cinema {
+	return entity.Cinema{
 		ID:      cin.ID,
 		Name:    cin.Name,
 		Address: cin.Address,
