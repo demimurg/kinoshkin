@@ -1,10 +1,13 @@
 package aggregator
 
 import (
-	"kinoshkin/pkg/env"
+	"log"
+
+	"github.com/caarlos0/env/v6"
+	"github.com/joho/godotenv"
 )
 
-type Config struct {
+var cfg = struct {
 	// CinemasUrl is an api url for retrieving cinemas
 	CinemasURL string `env:"CINEMAS_API_URL,required"`
 	// CitiesURL is an api url for retrieving cities
@@ -13,8 +16,13 @@ type Config struct {
 	ScheduleURL string `env:"SCHEDULE_API_URL,required"`
 	// TokenKP is a token for a movies service api
 	TokenKP string `env:"KP_API_TOKEN,required"`
+}{}
+
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatal(err)
+	}
 }
-
-var cfg = Config{}
-
-func init() { env.Parse(&cfg) }

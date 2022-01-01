@@ -5,6 +5,7 @@ import (
 	"kinoshkin/internal/bot/views"
 	logger "log"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -19,11 +20,15 @@ func log(err error, msg ...string) bool {
 	return false
 }
 
-func Start(svc domain.Conferencier) {
+func Start(
+	svc domain.Conferencier,
+	token string, verboseLogs bool,
+	telegramPollInterval time.Duration,
+) {
 	b, err := tb.NewBot(tb.Settings{
-		Token:   cfg.Token,
-		Verbose: cfg.LogTrace,
-		Poller:  &tb.LongPoller{Timeout: cfg.UpdateInterval},
+		Token:   token,
+		Verbose: verboseLogs,
+		Poller:  &tb.LongPoller{Timeout: telegramPollInterval},
 	})
 	log(err, "Bot initialization error")
 
