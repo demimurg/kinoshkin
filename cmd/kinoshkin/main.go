@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"kinoshkin/adapters/mongodb"
-	"kinoshkin/drivers/bot"
-	"kinoshkin/usecase"
+	"kinoshkin/internal/adapters/mongodb"
+	"kinoshkin/internal/drivers/bot"
+	"kinoshkin/internal/usecase"
 	"log"
 	"time"
 

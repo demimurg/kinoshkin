@@ -1,8 +1,8 @@
 package aggregator
 
 import (
+	"kinoshkin/internal/usecase"
 	"kinoshkin/pkg/set"
-	"kinoshkin/usecase"
 
 	"github.com/schollz/progressbar/v3"
 )

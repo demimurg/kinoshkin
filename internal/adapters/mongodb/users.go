@@ -1,6 +1,6 @@
 package mongodb
 
-import "kinoshkin/entity"
+import "kinoshkin/internal/entity"
 
 type user struct {
 	ID       int    `bson:"_id"`

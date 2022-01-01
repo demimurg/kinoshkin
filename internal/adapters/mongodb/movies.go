@@ -1,7 +1,7 @@
 package mongodb
 
 import (
-	"kinoshkin/entity"
+	"kinoshkin/internal/entity"
 	"time"
 )
 

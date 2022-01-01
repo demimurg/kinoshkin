@@ -2,8 +2,8 @@ package mongodb
 
 import (
 	"context"
-	"kinoshkin/entity"
-	"kinoshkin/usecase"
+	"kinoshkin/internal/entity"
+	"kinoshkin/internal/usecase"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"

@@ -1,6 +1,6 @@
 package usecase
 
-import "kinoshkin/entity"
+import "kinoshkin/internal/entity"
 
 // P is a pagination info
 type P struct {

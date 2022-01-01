@@ -2,7 +2,7 @@ package views
 
 import (
 	"fmt"
-	"kinoshkin/entity"
+	"kinoshkin/internal/entity"
 	"strings"
 	"time"
 

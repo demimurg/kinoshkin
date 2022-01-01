@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"kinoshkin/adapters/mongodb"
-	"kinoshkin/drivers/aggregator"
+	"kinoshkin/internal/adapters/mongodb"
+	"kinoshkin/internal/drivers/aggregator"
 	"log"
 
 	"github.com/caarlos0/env/v6"

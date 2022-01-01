@@ -2,8 +2,8 @@ package aggregator
 
 import (
 	"encoding/json"
-	"kinoshkin/entity"
-	"kinoshkin/usecase"
+	"kinoshkin/internal/entity"
+	"kinoshkin/internal/usecase"
 	"net/http"
 
 	"github.com/pkg/errors"

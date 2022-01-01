@@ -3,7 +3,7 @@ package aggregator
 import (
 	"encoding/json"
 	"fmt"
-	"kinoshkin/entity"
+	"kinoshkin/internal/entity"
 	"net/http"
 	"strconv"
 	"strings"

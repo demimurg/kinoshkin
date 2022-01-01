@@ -1,8 +1,8 @@
 package bot
 
 import (
-	"kinoshkin/internal/bot/views"
-	"kinoshkin/usecase"
+	"kinoshkin/internal/drivers/bot/views"
+	"kinoshkin/internal/usecase"
 	logger "log"
 	"strings"
 	"time"

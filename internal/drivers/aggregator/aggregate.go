@@ -1,7 +1,7 @@
 package aggregator
 
 import (
-	"kinoshkin/usecase"
+	"kinoshkin/internal/usecase"
 )
 
 type Aggregator interface {

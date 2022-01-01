@@ -1,6 +1,6 @@
 package mongodb
 
-import "kinoshkin/entity"
+import "kinoshkin/internal/entity"
 
 type Cinema struct {
 	ID       string   `bson:"_id"`

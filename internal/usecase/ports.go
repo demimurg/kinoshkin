@@ -1,6 +1,6 @@
 package usecase
 
-import "kinoshkin/entity"
+import "kinoshkin/internal/entity"
 
 type UsersRepository interface {
 	Get(id int) (*entity.User, error)

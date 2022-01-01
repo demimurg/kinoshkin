@@ -1,8 +1,8 @@
 package mongodb
 
 import (
-	"kinoshkin/entity"
-	"kinoshkin/usecase"
+	"kinoshkin/internal/entity"
+	"kinoshkin/internal/usecase"
 
 	"go.mongodb.org/mongo-driver/mongo"
 )
