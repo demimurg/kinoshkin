@@ -21,7 +21,7 @@ var cfg = struct {
 	// enable verbose logging for telebot
 	BotToken string `env:"BOT_TOKEN,required"`
 	// enable verbose logging for telebot
-	VerboseLog bool `env:"VERBOSE_LOG" envDefault:"true"`
+	VerboseLog bool `env:"VERBOSE_LOG" envDefault:"false"`
 	// interval for polling telegram updates
 	TelegramPoll time.Duration `env:"TELEGRAM_POLL" envDefault:"2s"`
 }{}
